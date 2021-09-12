@@ -1,0 +1,10 @@
+pyautogui
+schedule
+pymouse
+PyUserInput
+numpy
+opencv-python
+networkx
+matplotlib
+dict_recursive_update
+schedule

@@ -64,8 +64,7 @@ def get_screenshot():
 
 def get_appshot():
     global source
-    return source[base_point[1]:(base_point[1] + 960), base_point[0]:(base_point[0] + 540)]
-
+    return source[base_point[1]:(base_point[1] + 1440), base_point[0]:(base_point[0] + 900)]
 
 base_point = None
 
@@ -210,6 +209,7 @@ def get_all_modules(dir_name):
                 continue
             fullname = os.path.join(root, f)
             fullname = fullname.replace('.py', '')
-            fullname = fullname.replace('\\', '.')
+            # fullname = fullname.replace('\\', '.')
+            fullname = fullname.replace('/', '.')
             modules.append(fullname)
     return modules
