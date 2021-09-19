@@ -4,34 +4,69 @@ Date: 2021-02-21 02:27:24
 LastEditTime: 2021-03-07 04:28:43
 LastEditors: Please set LastEditors
 Description: In User Settings Edit
-FilePath: \挂机\findpic.py
+FilePath: findpic.py
 '''
+
+import time
+import inspect
+import numpy as np
+import matplotlib.pyplot as plt
 import pyautogui
 import pymouse
-import numpy
 import cv2 as cv
 import logging
 import time
 import subprocess
 import os
+import functools
 
 template = None
 
+def getNparam(func):
+    return len(inspect.signature(func).parameters)
 
-def find_img(background, template, similarity=0.95):
+class HashableNdArray:
+
+    def __init__(self, array) -> None:
+        self.array = array
+
+    def __hash__(self):
+        return int(self.array.sum())
+
+    def __eq__(self, o: object) -> bool:
+        return id(o)
+
+def showImg(img):
+    plt.imshow(img[..., -1::-1])
+
+def capitalize(s):
+    return s[0].upper() + s[1:]
+
+@functools.lru_cache()
+def find_img(background, template, similarity=0.8):
+    if isinstance(background, str):
+        background = cv.imread(background)
+    elif isinstance(background, HashableNdArray):
+        background = background.array
+
     if isinstance(template, str):
         template = cv.imread(template)
-
+    elif isinstance(template, HashableNdArray):
+        template = template.array
+    
     result = cv.matchTemplate(background, template, cv.TM_CCOEFF_NORMED)
     start_point = cv.minMaxLoc(result)[3]
     end_point = [start_point[0] + template.shape[1],
                  start_point[1] + template.shape[0]]
-
+    # import matplotlib.pyplot as plt
+    # plt.subplot(1,2,1)
+    # plt.imshow(background)
+    # plt.subplot(1,2,2)
+    # plt.imshow(template)
     if cv.minMaxLoc(result)[1] < similarity:
         return None
     else:
         return [start_point, end_point]
-
 
 def get_center_point(xy):
     center = [sum(t) // 2 for t in zip(xy[0], xy[1])]
@@ -51,11 +86,15 @@ def get_right_upper_point(xy):
 def capture_screenshot():
     global source
     img = pyautogui.screenshot()  # x,y,w,h
-    img.save('screenshot.png')
-    source = cv.imread('screenshot.png')
-
+    # img.save('screenshot.png')
+    # source = cv.imread('screenshot.png')
+    source = np.array(img.convert('RGB'))[..., -1::-1]
+    if base_point is not None:
+        imgName = 'collectImgs/img_{}.png'.format(time.strftime("%Y_%m_%d_%H_%M_%S"))
+        img = source[base_point[1]:(base_point[1] + 1450), base_point[0]:(base_point[0] + 900 )]
+        logging.debug("Img {} save saved".format(imgName))
+        plt.imsave(imgName, img[..., -1::-1])
     return source
-
 
 def get_screenshot():
     global source
@@ -64,7 +103,8 @@ def get_screenshot():
 
 def get_appshot():
     global source
-    return source[base_point[1]:(base_point[1] + 1440), base_point[0]:(base_point[0] + 900)]
+    appshot = source[base_point[1]:(base_point[1] + 1450), base_point[0]:(base_point[0] + 900)]
+    return appshot
 
 base_point = None
 
@@ -91,7 +131,7 @@ class Operation:
 
     def reset_base_point(self):
         global base_point
-        xy = find_img(capture_screenshot(), 'img/base/head.png')
+        xy = find_img(HashableNdArray(capture_screenshot()), 'img/base/head.png')
         if xy == None:
             logging.error('can not find base_point')
             assert(None)
@@ -102,7 +142,8 @@ class Operation:
     def click(self, xy, bg='app'):
         global base_point
         if bg == 'app':
-            pymouse.PyMouse().click(*map(sum, zip(xy, base_point)), 1)
+            adjusted_basepoints = [base_point[0]/2, base_point[1]/2]
+            pymouse.PyMouse().click(*map(sum, zip(xy, adjusted_basepoints)), 1)
         else:
             pymouse.PyMouse().click(*xy, 1)
 

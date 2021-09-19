@@ -65,10 +65,16 @@ def npc(control):
     logging.info('do npc stop')
 
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)-8s - %(levelname)-8s - %(funcName)-8s - %(lineno)-4d - %(message)s")
+# subpressing logging information from third-party pakcages
+for name, logger in logging.root.manager.loggerDict.items():
+    if not isinstance(logger, logging.PlaceHolder):
+        logger.setLevel(logging.INFO) 
+
 
 t = transfer.StatusControlThread()
-t.start()
+t.run()
+# t.start()
 
 schedule.every().hour.do(npc, t)
 schedule.every(3).seconds.do(pvp, t)
