@@ -37,15 +37,18 @@ class MultiIcon(Icon):
                 self.icons = [Icon(path) for path in paths]
                 self.paths = paths
 
-        def clickAll(self):
-                for icon in self.icons:
-                        if icon.exists():
-                                icon.click()
+        def click(self, *args):
+                self.clickFirst(*args)
 
-        def clickFirst(self):
+        def clickAll(self, *args):
                 for icon in self.icons:
                         if icon.exists():
-                                icon.click()
+                                icon.click(*args)
+
+        def clickFirst(self, *args):
+                for icon in self.icons:
+                        if icon.exists():
+                                icon.click(*args)
                                 return
                 raise Exception("MultiIcon {} can't be found!".format(self.paths))
         
