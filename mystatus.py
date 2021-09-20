@@ -3,7 +3,7 @@ import logging
 import time
 import re
 import tool
-from icons import DMWorldIcon, GXWorldIcon, Icon, startGameIcon, notificationPageDownBar, generalReturnButton, kuloNoSuOccurPageLocator, kuloNoSuOccurPageGoTo, generalCloseButton,homePageMonsterGateNonSelected,homePageMonsterGateSelected, homePagePvpNonSelected,homePagePvpSelected,homePageStoreNonSelected,homePageStoreSelected,homePageTransportGateNonSelected,homePageTransportGateSelected,homePageWorkshopNonSelected,homePageWorkshopSelected,keysIcon, generalYesButton, normalNpcIcons, diagLogNextIcon, duelButton, autoDuelButton, saveVideoButton, recordButton, generalNextButton, duelResultsPageTitle, getSaiFragment, switchWorldButton, generalCancelButton 
+from icons import *
 
 lastClickTime = -1
 
@@ -46,7 +46,8 @@ class Status:
                 if action not in self.transferDict:
                         raise Exception("act {} not in {}".format(action, self.transferDict))
                 logging.debug("CurrentStatus: {}. Take action {}".format(self.name, action))
-                self.transferDict[action]()
+                func = self.transferDict[action]
+                func(self)
                 lastClickTime = time.time()
                 logging.debug("lastClickTime {}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(lastClickTime))))
                 time.sleep(delayTime)
@@ -58,7 +59,7 @@ startPage = Status(
         name='startPage', 
         iconDict={"startGameIcon": startGameIcon},
         transferDict={
-                "startGame": startGameIcon.click
+                "startGame": lambda status: startGameIcon.click()
         },
         condition='startGameIcon'
 )
@@ -69,7 +70,9 @@ notificationPage = Status(
                 "returnButton": generalReturnButton,
                 "notificationPageDownBar": notificationPageDownBar
         },
-        transferDict={"return": generalReturnButton.click},
+        transferDict={
+                "return": lambda status: generalReturnButton.click()
+        },
         condition='notificationPageDownBar'
 )
 
@@ -129,15 +132,15 @@ homePage = HomePage(
                 'switchWorldButton': switchWorldButton
         },
         transferDict={
-                'selectPvp': homePagePvpNonSelected.click,
-                'selectTransportGate': homePageTransportGateNonSelected.click,
-                'selectStore': homePageStoreNonSelected.click,
-                'selectMonsterGate': homePageMonsterGateNonSelected.click,
-                'selectWorkshop': homePageWorkshopNonSelected.click,
-                'collectOneKey': keysIcon.clickFirst,
-                'collectAllKeys': keysIcon.clickAll,
-                'clickOneNormalNpc': normalNpcIcons.clickFirst,
-                'switchWorld': switchWorldButton.clickFirst
+                'selectPvp': lambda status:homePagePvpNonSelected.click(),
+                'selectTransportGate': lambda status:homePageTransportGateNonSelected.click(),
+                'selectStore': lambda status:homePageStoreNonSelected.click(),
+                'selectMonsterGate': lambda status:homePageMonsterGateNonSelected.click(),
+                'selectWorkshop': lambda status:homePageWorkshopNonSelected.click(),
+                'collectOneKey': lambda status:keysIcon.clickFirst(),
+                'collectAllKeys': lambda status:keysIcon.clickAll(),
+                'clickOneNormalNpc': lambda status:normalNpcIcons.clickFirst(),
+                'switchWorld': lambda status:switchWorldButton.click()
         },
         condition='pvpSelected | transportGateSelected | workshopSelected | storeSelected | monsterGateSelected'
 )
@@ -148,7 +151,7 @@ recieveKeys = Status(
                 'yesIcon': generalYesButton
         },
         transferDict={
-                'click': generalYesButton.click
+                'click': lambda status:generalYesButton.click()
         },
         condition='homePage.check() & yesIcon',
         level = 200
@@ -160,7 +163,7 @@ inDiagLog = Status(
                 'nextButton': diagLogNextIcon
         },
         transferDict={
-                'next': diagLogNextIcon.click
+                'next': lambda status:diagLogNextIcon.click()
         },
         condition='nextButton'
 )
@@ -172,8 +175,8 @@ selectDuelMode = Status(
                 'autoDuelButton':  autoDuelButton
         },
         transferDict={
-                'duel': duelButton.click,
-                'autoDuel': autoDuelButton.click
+                'duel': lambda status: duelButton.click(),
+                'autoDuel': lambda status :autoDuelButton.click()
         },
         condition='duelButton & autoDuelButton'
 )
@@ -186,9 +189,9 @@ duelFinishedPage = Status(
                 'yes': generalYesButton,
         },
         transferDict={
-                'saveVideo': saveVideoButton.click,
-                'record': recordButton.click,
-                'yes': generalYesButton.click
+                'saveVideo': lambda status:saveVideoButton.click(),
+                'record': lambda status:recordButton.click(),
+                'yes': lambda status:generalYesButton.click()
         },
         condition='saveVideoButton & recordButton & yes'
 )
@@ -200,7 +203,7 @@ notFinishLoadingDuelResultsPage = Status(
                 "title": duelResultsPageTitle
         },
         transferDict={
-                'randomClick': duelResultsPageTitle.click
+                'randomClick': lambda status:duelResultsPageTitle.click()
         },
         condition="title & !next",
         level=200
@@ -213,7 +216,7 @@ duelResultsPage = Status(
                 "title": duelResultsPageTitle
         },
         transferDict={
-                'next': generalNextButton.click
+                'next': lambda status:generalNextButton.click()
         },
         condition="title & next",
         level=199,
@@ -226,7 +229,7 @@ getSaiStatus = Status(
                 "yes": generalYesButton
         },
         transferDict={
-                'yes': generalYesButton.click
+                'yes': lambda status:generalYesButton.click()
         },
         condition="getSaiFragment",
         level=200,
@@ -239,8 +242,8 @@ switchingWorldStatus = Status(
                 'gxWorld': GXWorldIcon
         },
         transferDict={
-                'switchToDMWorld': DMWorldIcon.click,
-                'switchToGXWorld': GXWorldIcon.click
+                'switchToDMWorld': lambda status:DMWorldIcon.click(),
+                'switchToGXWorld': lambda status:GXWorldIcon.click()
         },
         condition="dmWorld & gxWorld",
         level=200,
@@ -252,7 +255,7 @@ generalYesPage = Status(
                 'yesButton': generalYesButton
         },
         transferDict={
-                'yes': generalYesButton.click
+                'yes': lambda status: generalYesButton.click()
         },
         condition="yesButton",
 )
@@ -275,7 +278,7 @@ generalNextPage= Status(
                 'nextButton': generalNextButton
         },
         transferDict={
-                'next': generalNextButton.click
+                'next': lambda status:generalNextButton.click()
         },
         condition="nextButton",
 )
@@ -286,7 +289,7 @@ recommendFriendPage = Status(
                 'cancelButton': generalCancelButton
         },
         transferDict={
-                'cancel': generalCancelButton.click,
+                'cancel': lambda status: generalCancelButton.click(),
         },
         condition="cancelButton",
 )
