@@ -181,19 +181,25 @@ selectDuelMode = Status(
         condition='duelButton & autoDuelButton'
 )
 
-duelFinishedPage = Status(
+class FinishedStatus(Status):
+
+        def isWin(self):
+                return self.iconDict['duelWinIcon'].exists()
+        
+duelFinishedPage = FinishedStatus(
         name="duelFinishedPage",
         iconDict={
                 'saveVideoButton': saveVideoButton,
                 'recordButton':  recordButton,
                 'yes': generalYesButton,
+                'duelWinIcon': duelWinIcon
         },
         transferDict={
                 'saveVideo': lambda status:saveVideoButton.click(),
                 'record': lambda status:recordButton.click(),
                 'yes': lambda status:generalYesButton.click()
         },
-        condition='saveVideoButton & recordButton & yes'
+        condition='recordButton & yes'
 )
 
 notFinishLoadingDuelResultsPage = Status(

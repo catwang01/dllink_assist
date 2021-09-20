@@ -105,6 +105,7 @@ saveVideoButton = Icon('img/saveVideo.png')
 recordButton = Icon('img/recordButton.png')
 
 duelResultsPageTitle = Icon('img/duelResultsPageTitle.png')
+duelWinIcon  = Icon('img/duelWinIcon.png')
 
 getSaiFragment = Icon('img/getSaiFragments.png')
 

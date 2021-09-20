@@ -232,6 +232,7 @@ class StatusControlThread(threading.Thread):
 
     def duelWithOneNormalNpc(self):
         nDiagLog = 0
+        isWin = None
         while True:
             self.now_status = self.getCurrentStatus()
             if str(self.now_status) == 'inDiagLog':
@@ -240,6 +241,7 @@ class StatusControlThread(threading.Thread):
             elif str(self.now_status) == "selectDuelMode":
                 self.now_status.transfer('autoDuel')
             elif str(self.now_status) == "duelFinishedPage":
+                isWin = self.now_status.isWin()
                 self.now_status.transfer("yes")
             elif str(self.now_status) == 'notFinishLoadingDuelResultsPage':
                 self.now_status.transfer("randomClick")
@@ -251,7 +253,7 @@ class StatusControlThread(threading.Thread):
                 self.now_status.transfer("cancel")
             else:
                 if nDiagLog >= 2:
-                    print('Duel finished!')
+                    print('Duel finished! Result: {}'.format('Won' if isWin else 'Lost'))
                     break
 
     def duelWithNormalNpcs(self):
