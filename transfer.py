@@ -27,6 +27,7 @@ import importlib
 import duel
 import mystatus
 from mystatus import *
+from general.status import *
 
 delay_dict = {
     'STATUS_GATE_DUEL': 16000,
@@ -54,7 +55,7 @@ class StatusControlThread(threading.Thread):
         duelResultsPage,
         notFinishLoadingDuelResultsPage,
         getSaiStatus,
-        recommendFriendPage,
+        generalCancelPage,
         switchingWorldStatus,
         generalYesPage,
         generalNextPage,
@@ -249,8 +250,8 @@ class StatusControlThread(threading.Thread):
                 self.now_status.transfer("next")
             elif str(self.now_status) == 'getSaiFragment':
                 self.now_status.transfer("yes")
-            elif str(self.now_status) == 'recommendFriendPage':
-                self.now_status.transfer("cancel")
+            elif self.now_status in generalStatusList:
+                self.now_status.transfer("default")
             else:
                 if nDiagLog >= 2:
                     print('Duel finished! Result: {}'.format('Won' if isWin else 'Lost'))
@@ -316,10 +317,8 @@ class StatusControlThread(threading.Thread):
                 self.now_status.transfer('close')
             elif str(self.now_status) == 'homePage':
                 self.handleHomePage()
-            elif str(self.now_status) == 'generalYesPage':
-                self.now_status.transfer('yes')
-            elif str(self.now_status) == 'generalNextPage':
-                self.now_status.transfer('next')
+            elif str(self.now_status) in generalStatus:
+                self.now_status.transfer('default')
 
             # if self.target_status == 'STATUS_BASE':
             #     time.sleep(0.5)

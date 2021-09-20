@@ -75,12 +75,6 @@ notificationPageDownBar = Icon('img/notificationDownBar.png')
 kuloNoSuOccurPageLocator = Icon('img/kuloNoSuOccurPage.png')
 kuloNoSuOccurPageGoTo = Icon('img/kuloNoSuOccurGoTo.png')
 
-generalYesButton = Icon('img/base/generalYesButton.png')
-generalReturnButton = Icon('img/returnButton.png')
-generalCloseButton = Icon('img/closeButton.png')
-generalNextButton = Icon('img/generalNextButton.png')
-generalCancelButton = Icon('img/generalCancelButton.png')
-
 homePageTransportGateSelected = Icon('img/home/channels/transport_gate_selected.png')
 homePageTransportGateNonSelected = Icon('img/home/channels/transport_gate_non_selected.png')
 

@@ -4,6 +4,7 @@ import time
 import re
 import tool
 from icons import *
+from general.icons import *
 
 lastClickTime = -1
 
@@ -253,49 +254,4 @@ switchingWorldStatus = Status(
         },
         condition="dmWorld & gxWorld",
         level=200,
-)
-
-generalYesPage = Status(
-        name='generalYesPage',
-        iconDict={
-                'yesButton': generalYesButton
-        },
-        transferDict={
-                'yes': lambda status: generalYesButton.click()
-        },
-        condition="yesButton",
-)
-
-generalClosePage= Status(
-        name='generalClosePage',
-        iconDict={
-                'closeButton': generalCloseButton
-        },
-        transferDict={
-                'close': lambda status:generalCloseButton.click()
-        },
-        condition="closeButton",
-)
-
-
-generalNextPage= Status(
-        name='generalNextPage',
-        iconDict={
-                'nextButton': generalNextButton
-        },
-        transferDict={
-                'next': lambda status:generalNextButton.click()
-        },
-        condition="nextButton",
-)
-
-recommendFriendPage = Status(
-        name='recommendFriendPage',
-        iconDict={
-                'cancelButton': generalCancelButton
-        },
-        transferDict={
-                'cancel': lambda status: generalCancelButton.click(),
-        },
-        condition="cancelButton",
 )
