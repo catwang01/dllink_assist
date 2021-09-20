@@ -66,6 +66,25 @@ class MultiIcon(Icon):
         def exists(self) -> bool:
                 return self.count() != 0
 
+class CoordinateIcon(Icon):
+
+        def __init__(self, position=None) -> None:
+                self.path = None
+                self._position = [
+                        (position[0][0] * 2, position[0][1] * 2),
+                        (position[1][0] * 2, position[1][1] * 2),
+                ]
+        
+        @property
+        def position(self):
+            return self._position
+
+        def click(self, x=0, y=0):
+            return super().click(x=x, y=y)
+
+        def exists(self) -> bool:
+            return True
+
 keysIcon = MultiIcon(glob.glob('img/base/key*.png'))
 
 startGameIcon = Icon('img/base/start_game.png')
@@ -106,7 +125,7 @@ duelWinIcon  = Icon('img/duelWinIcon.png')
 
 getSaiFragment = Icon('img/getSaiFragments.png')
 
-switchWorldButton = MultiIcon(glob.glob('img/switchWorldButton*.png'))
+switchWorldButton = CoordinateIcon(position=[(20, 210), (40, 230)])
 
 DMWorldIcon = Icon('img/DMWorldIcon.png')
 GXWorldIcon = Icon('img/GXWorldIcon.png')
