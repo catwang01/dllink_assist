@@ -7,6 +7,7 @@ Description: In User Settings Edit
 FilePath: findpic.py
 '''
 
+import random
 import time
 import inspect
 import numpy as np
@@ -89,7 +90,8 @@ def capture_screenshot():
     # img.save('screenshot.png')
     # source = cv.imread('screenshot.png')
     source = np.array(img.convert('RGB'))[..., -1::-1]
-    if base_point is not None:
+    # sample rate 1%
+    if base_point is not None and random.random() < 0.01:
         imgName = 'collectImgs/img_{}.png'.format(time.strftime("%Y_%m_%d_%H_%M_%S"))
         img = source[base_point[1]:(base_point[1] + 1450), base_point[0]:(base_point[0] + 900 )]
         logging.debug("Img {} save saved".format(imgName))
