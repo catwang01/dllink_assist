@@ -17,7 +17,6 @@ import tool
 import sys
 import networkx as nx
 import matplotlib.pyplot as plt
-import logging
 import threading
 import time
 from dict_recursive_update import recursive_update
@@ -28,6 +27,10 @@ import duel
 import mystatus
 from mystatus import *
 from general.status import *
+from log.log import setupLogging
+
+setupLogging()
+logger = logging.getLogger(__name__)
 
 delay_dict = {
     'STATUS_GATE_DUEL': 16000,
@@ -100,7 +103,7 @@ class StatusControlThread(threading.Thread):
         return f'now[{self.now_status}] next[{self.next_status}] target[{self.target_status}]'
 
     def goto_status(self, status, delay_s=180):
-        logging.info(f'start go to status[{status}] ')
+        logger.info(f'start go to status[{status}] ')
         if self.now_status == status:
             return True
         self.set_target_status(status)
@@ -112,7 +115,7 @@ class StatusControlThread(threading.Thread):
                 time.sleep(1)
                 delay_s -= 1
         if self.now_status == status:
-            logging.info(f'start go to status[{status}] success')
+            logger.info(f'start go to status[{status}] success')
             return True
         else:
             logging.warn(f'start go to status[{status}] fail')
@@ -120,7 +123,7 @@ class StatusControlThread(threading.Thread):
 
     def exec_delay(self, status):
         if status in delay_dict.keys():
-            logging.info(f'exec [{status}] delay[{delay_dict[status]}]')
+            logger.info(f'exec [{status}] delay[{delay_dict[status]}]')
             time.sleep(delay_dict[status] / 1000)
         else:
             time.sleep(1000 / 1000)
@@ -146,27 +149,27 @@ class StatusControlThread(threading.Thread):
 
         now = time.time()
         interval = now - max(mystatus.lastClickTime, self.refreshScreenTime)
-        logging.debug("laskClickTime: {}, self.refreshScreenTime: {} now: {}".format(mystatus.lastClickTime, self.refreshScreenTime, now))
+        logger.debug("laskClickTime: {}, self.refreshScreenTime: {} now: {}".format(mystatus.lastClickTime, self.refreshScreenTime, now))
         if interval < self.minRefreshInterval:
             sleepTime = np.ceil(self.minRefreshInterval - interval)
-            logging.info("Refresh screen too frequently! Sleep for {}s".format(sleepTime))
+            logger.info("Refresh screen too frequently! Sleep for {}s".format(sleepTime))
             time.sleep(sleepTime)
             self.refreshScreen()
         else:
             self.refreshScreenTime = time.time()
             tool.capture_screenshot()
-            logging.debug("The screen has been refreshed! refreshScreenTime: {}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(self.refreshScreenTime))))
+            logger.debug("The screen has been refreshed! refreshScreenTime: {}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(self.refreshScreenTime))))
 
     def getCurrentStatus(self, refresh=True) -> Optional[Status]:
         if refresh:
             self.refreshScreen()
-        logging.debug('Getting current status')
+        logger.debug('Getting current status')
         curStatus = None
         for status in self.statusList:
             if status.check():
                 curStatus = status 
                 break
-        logging.debug("Current status: {}".format(curStatus))
+        logger.debug("Current status: {}".format(curStatus))
         return curStatus
 
     def changeWorld(self, targetWorld=None):
@@ -179,7 +182,7 @@ class StatusControlThread(threading.Thread):
                     self.now_status.transfer('switchToDMWorld', 5)
                 else:
                     self.now_status.transfer('switchToGXWorld', 5)
-                logging.debug("Goto world: {}".format(targetWorld))
+                logger.debug("Goto world: {}".format(targetWorld))
                 return
             else:
                 break
@@ -196,39 +199,39 @@ class StatusControlThread(threading.Thread):
             return
         channels = ['pvp', 'transportGate', 'store', 'workshop', 'monsterGate']
         nChannels = len(channels)
-        logging.info("Collecting keys...")
+        logger.info("Collecting keys...")
         startTime = time.time()
         nTotalCollected = 0
         while len(channels):
             channel = random.choice(channels)
             nCollected = 0
-            logging.debug("goto {}".format(channel))
+            logger.debug("goto {}".format(channel))
             currentChannel = self.now_status.inWhichChannel()
-            logging.debug("current: {} goto: {}".format(currentChannel, channel))
+            logger.debug("current: {} goto: {}".format(currentChannel, channel))
             if  currentChannel != channel:
                 self.now_status.transfer('select{}'.format(capitalize(channel)))
             else:
-                logging.debug("Staying current channel")
-            logging.info("Collecting keys in {}".format(channel))
+                logger.debug("Staying current channel")
+            logger.info("Collecting keys in {}".format(channel))
             while True:
                 self.now_status = self.getCurrentStatus()
                 if str(self.now_status) == 'homePage':
                     nKeys = self.now_status.countKeys()
                     if nKeys > 0:
-                        logging.info("Find {} keys in current channel".format(nKeys))
+                        logger.info("Find {} keys in current channel".format(nKeys))
                         self.now_status.transfer('collectOneKey')
                         nCollected += 1
                     else:
-                        logging.info("Find no keys in current channel!".format(nKeys))
+                        logger.info("Find no keys in current channel!".format(nKeys))
                         break
                 elif str(self.now_status) == 'recieveKeys':
                     self.now_status.transfer('click')
-            logging.info("Collected {} keys in current channel: {}".format(nCollected, channel))
+            logger.info("Collected {} keys in current channel: {}".format(nCollected, channel))
             channels.remove(channel)
-            logging.info("Total channels: {} Collected: {} Left: {}".format(nChannels, nChannels - len(channels), len(channels)))
+            logger.info("Total channels: {} Collected: {} Left: {}".format(nChannels, nChannels - len(channels), len(channels)))
             nTotalCollected += nCollected 
         endTime = time.time()
-        logging.info("Collecting finished! TimeUsed: {}s Total collected keys: {}".format(int(endTime - startTime), nTotalCollected))
+        logger.info("Collecting finished! TimeUsed: {}s Total collected keys: {}".format(int(endTime - startTime), nTotalCollected))
         return
 
     def duelWithOneNormalNpc(self):
@@ -244,8 +247,6 @@ class StatusControlThread(threading.Thread):
             elif str(self.now_status) == "duelFinishedPage":
                 isWin = self.now_status.isWin()
                 self.now_status.transfer("yes")
-            elif str(self.now_status) == 'notFinishLoadingDuelResultsPage':
-                self.now_status.transfer("randomClick")
             elif str(self.now_status) == "duelResultsPage":
                 self.now_status.transfer("next")
             elif str(self.now_status) == 'getSaiFragment':
@@ -263,40 +264,41 @@ class StatusControlThread(threading.Thread):
             return
         channels = ['pvp', 'transportGate', 'store', 'workshop', 'monsterGate']
         nChannels = len(channels)
-        logging.info("Searching normal npcs...")
+        logger.info("Searching normal npcs...")
         startTime = time.time()
         nTotalSearched = 0
         while len(channels):
             channel = random.choice(channels)
             nSearched = 0
-            logging.debug("goto {}".format(channel))
+            logger.debug("goto {}".format(channel))
             currentChannel = self.now_status.inWhichChannel()
-            logging.debug("current: {} goto: {}".format(currentChannel, channel))
+            logger.debug("current: {} goto: {}".format(currentChannel, channel))
             if  currentChannel != channel:
                 self.now_status.transfer('select{}'.format(capitalize(channel)), 5)
             else:
-                logging.debug("Staying current channel")
-            logging.info("Searching normal npcs in {}".format(channel))
+                logger.debug("Staying current channel")
+            logger.info("Searching normal npcs in {}".format(channel))
             while True:
                 self.now_status = self.getCurrentStatus()
                 if str(self.now_status) == 'homePage':
                     nNpcs = self.now_status.countNormalNpcs()
                     if nNpcs > 0:
-                        logging.info("Find {} normal npcs in current channel".format(nNpcs))
+                        logger.info("Find {} normal npcs in current channel".format(nNpcs))
                         self.now_status.transfer('clickOneNormalNpc')
                         self.duelWithOneNormalNpc()
                         nSearched += 1
                     else:
-                        logging.info("Find no normal npcs in current channel!".format(nNpcs))
+                        logger.info("Find no normal npcs in current channel!".format(nNpcs))
                         break
                 elif str(self.now_status) == 'recieveKeys':
                     self.now_status.transfer('click')
-            logging.info("Searched {} normal npcs in current channel: {}".format(nSearched, channel))
+            logger.info("Searched {} normal npcs in current channel: {}".format(nSearched, channel))
             channels.remove(channel)
-            logging.info("Total channels: {} Searched: {} Left: {}".format(nChannels, nChannels - len(channels), len(channels)))
+            logger.info("Total channels: {} Searched: {} Left: {}".format(nChannels, nChannels - len(channels), len(channels)))
             nTotalSearched += nSearched 
         endTime = time.time()
-        logging.info("Searching finished! TimeUsed: {}s Total search normal npcs: {}".format(int(endTime - startTime), nTotalSearched))
+        logger.info("Searching finished! TimeUsed: {}s Total search normal npcs: {}".format(int(endTime - startTime), nTotalSearched))
+        return
         return
 
     def run(self):  # 必须有的函数
@@ -346,7 +348,7 @@ class StatusControlThread(threading.Thread):
             #         logging.error(f'can not reach targer status, {self}')
             #         assert(None)
             #     self.next_status = self.short_path_dict[self.now_status][self.target_status][1]
-            #     logging.info(f'start transfer, {self}')
+            #     logger.info(f'start transfer, {self}')
             #     self.transfer(self.next_status)
             #     continue
 
@@ -379,7 +381,7 @@ class StatusControlThread(threading.Thread):
     #     for channel, icon in channelIcons.items():
     #         if channel != self.getCurrentChannel():
     #             self.clickOnImg(icon.nonSelectPath)
-    #         logging.debug('channel: {}'.format(channel))
+    #         logger.debug('channel: {}'.format(channel))
     #         nSelectedKeys = 0
     #         for keyPath in keyIcon.paths:
     #             while True:
@@ -388,7 +390,7 @@ class StatusControlThread(threading.Thread):
     #                     self.clickOnImg(yesIcon.path, allowNotExist=True)
     #                 else:
     #                     break
-    #         logging.info("Select {} keys in channel {}".format(nSelectedKeys, channel))
+    #         logger.info("Select {} keys in channel {}".format(nSelectedKeys, channel))
 
     def stop(self):
         self.thread_close_flag = True
@@ -411,7 +413,7 @@ class StatusControlThread(threading.Thread):
         for img in cs.staimg_list['yes']:
             xy = tool.find_img(tool.get_appshot(), self.img_dict[img])
             if xy == None:
-                logging.debug(
+                logger.debug(
                     f'expect status[{expect_status}] can not find img[{img}]')
                 res = False
                 break
@@ -420,7 +422,7 @@ class StatusControlThread(threading.Thread):
             xy = tool.find_img(tool.get_appshot(), self.img_dict[img])
 
             if xy != None:
-                logging.debug(
+                logger.debug(
                     f'expect status[{expect_status}] find illgal img[{img}]')
                 res = False
                 break
@@ -446,7 +448,7 @@ class StatusControlThread(threading.Thread):
         #     tool.log_error_screen('search_status')
         #     assert(None)
         #     return False
-        logging.info(f'search status finished, {self}')
+        logger.info(f'search status finished, {self}')
         return True
 
     def set_target_status(self, expect_status):
