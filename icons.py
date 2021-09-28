@@ -1,15 +1,17 @@
 import tool
+import matplotlib.pyplot as plt
 import os
 import logging
 import glob
 from tool import HashableNdArray
 
 class Icon:
-        def __init__(self, path, check=True) -> None:
+        def __init__(self, path, name=None, similarity=0.8, check=True) -> None:
                 self.path = path
+                self.name = name
+                self.similarity = similarity
                 if check and not os.path.exists(self.path):
                         raise Exception("Can't find img: {}".format(self.path))
-
 
 
         def click(self, x=0, y=0):
@@ -22,10 +24,14 @@ class Icon:
 
         @property
         def position(self):
-                return tool.find_img(HashableNdArray(tool.get_appshot()), self.path)
+                return tool.find_img(HashableNdArray(tool.get_appshot()), self.path, self.similarity)
 
         def exists(self) -> bool:
                 return self.position is not None
+        
+        def showImg(self):
+                plt.imshow(plt.imread(self.path))
+                plt.show()
 
 class SelectIcon(Icon):
         def __init__(self, selectPath, nonSelectPath) -> None:
@@ -33,8 +39,11 @@ class SelectIcon(Icon):
                 self.nonSelectPath = nonSelectPath
 
 class MultiIcon(Icon):
-        def __init__(self, paths) -> None:
-                self.icons = [Icon(path) for path in paths]
+        def __init__(self, paths, *args, **kwargs) -> None:
+                if 'name' in kwargs:
+                        self.name = kwargs['name']
+                        del kwargs['name']
+                self.icons = [Icon(path, *args, **kwargs) for path in paths]
                 self.paths = paths
 
         def click(self, *args):
@@ -58,6 +67,12 @@ class MultiIcon(Icon):
                         if icon.exists():
                                 n += 1
                 return n
+
+        def getFirstExistIcon(self):
+                for icon in self.icons:
+                        if icon.exists():
+                                return icon
+                raise Exception("No icon exist!")
         
         @property
         def position(self):
@@ -85,7 +100,11 @@ class CoordinateIcon(Icon):
         def exists(self) -> bool:
             return True
 
-keysIcon = MultiIcon(glob.glob('img/base/key*.png'))
+        def showImg(self):
+                x, y = self._position
+                img = tool.get_appshot()
+                img = tool.get_appshot()[x[1]:y[1], x[0]:y[0]]
+                plt.imshow(img[..., -1::-1])
 
 startGameIcon = Icon('img/base/start_game.png')
 
@@ -94,38 +113,8 @@ notificationPageDownBar = Icon('img/notificationDownBar.png')
 kuloNoSuOccurPageLocator = Icon('img/kuloNoSuOccurPage.png')
 kuloNoSuOccurPageGoTo = Icon('img/kuloNoSuOccurGoTo.png')
 
-homePageTransportGateSelected = Icon('img/home/channels/transport_gate_selected.png')
-homePageTransportGateNonSelected = Icon('img/home/channels/transport_gate_non_selected.png')
-
-homePagePvpSelected = Icon('img/home/channels/pvp_selected.png')
-homePagePvpNonSelected = Icon('img/home/channels/pvp_non_selected.png')
-
-homePageStoreSelected = Icon('img/home/channels/store_selected.png')
-homePageStoreNonSelected = Icon('img/home/channels/store_non_selected.png')
-
-homePageMonsterGateSelected = Icon('img/home/channels/monster_gate_selected.png')
-homePageMonsterGateNonSelected = Icon('img/home/channels/monster_gate_non_selected.png')
-
-homePageWorkshopSelected = Icon('img/home/channels/workshop_selected.png')
-homePageWorkshopNonSelected = Icon('img/home/channels/workshop_non_selected.png')
-
-normalNpcIcons = MultiIcon(glob.glob('img/npc/npc*.png'))
-
 diagLogNextIcon = Icon('img/diagLogNextIcon.png')
-
-duelButton = Icon('img/duelButton.png')
-autoDuelButton = Icon('img/autoDuelButton.png')
-
-
-saveVideoButton = Icon('img/saveVideo.png')
-recordButton = Icon('img/recordButton.png')
-
-duelResultsPageTitle = Icon('img/duelResultsPageTitle.png')
-duelWinIcon  = Icon('img/duelWinIcon.png')
+diagLogBackground = Icon('img/diagLogBackground.png')
+diagLogTitleIcon = Icon('img/diagLogTitleIcon.png')
 
 getSaiFragment = Icon('img/getSaiFragments.png')
-
-switchWorldButton = CoordinateIcon(position=[(20, 210), (40, 230)])
-
-DMWorldIcon = Icon('img/DMWorldIcon.png')
-GXWorldIcon = Icon('img/GXWorldIcon.png')

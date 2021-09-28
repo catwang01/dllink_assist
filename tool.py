@@ -26,6 +26,17 @@ template = None
 def getNparam(func):
     return len(inspect.signature(func).parameters)
 
+def move(position, xy):
+    x, y = xy
+    position = [
+                (position[0][0] + x * 2, position[0][1] + y* 2),
+                (position[1][0] + x * 2, position[1][1] + y * 2),
+                ]
+    return position
+
+def getShotAtPosition(img, position, width=50):
+    return img[position[1]-width:position[1]+width, position[0]-width:position[0]+width]
+
 class HashableNdArray:
 
     def __init__(self, array) -> None:
@@ -55,18 +66,17 @@ def find_img(background, template, similarity=0.8):
     elif isinstance(template, HashableNdArray):
         template = template.array
     
-    result = cv.matchTemplate(background, template, cv.TM_CCOEFF_NORMED)
-    start_point = cv.minMaxLoc(result)[3]
+    result = cv.matchTemplate(background, template, cv.TM_CCOEFF_NORMED) 
+    _, sim, _, start_point = cv.minMaxLoc(result)
     end_point = [start_point[0] + template.shape[1],
                  start_point[1] + template.shape[0]]
-    # import matplotlib.pyplot as plt
-    # plt.subplot(1,2,1)
-    # plt.imshow(background)
-    # plt.subplot(1,2,2)
-    # plt.imshow(template)
-    if cv.minMaxLoc(result)[1] < similarity:
+    if sim < similarity:
         return None
     else:
+        matchedImg = background[start_point[1]: end_point[1], start_point[0]: end_point[0]]
+        isColorClose = np.isclose(matchedImg.mean(), template.mean(), 0.1)
+        if not isColorClose:
+            return None
         return [start_point, end_point]
 
 def get_center_point(xy):
@@ -91,10 +101,10 @@ def capture_screenshot():
     # source = cv.imread('screenshot.png')
     source = np.array(img.convert('RGB'))[..., -1::-1]
     # sample rate 1%
-    if base_point is not None and random.random() < 0.01:
+    if base_point is not None and random.random() < 0.001:
         imgName = 'collectImgs/img_{}.png'.format(time.strftime("%Y_%m_%d_%H_%M_%S"))
-        img = source[base_point[1]:(base_point[1] + 1450), base_point[0]:(base_point[0] + 900 )]
-        logging.debug("Img {} save saved".format(imgName))
+        img = source[base_point[1]:(base_point[1] + 1450), base_point[0]:(base_point[0] + 900)]
+        logging.debug("Img {} saved".format(imgName))
         plt.imsave(imgName, img[..., -1::-1])
     return source
 
@@ -145,9 +155,9 @@ class Operation:
         global base_point
         if bg == 'app':
             adjusted_basepoints = [base_point[0]/2, base_point[1]/2]
-            pymouse.PyMouse().click(*map(sum, zip(xy, adjusted_basepoints)), 1)
-        else:
-            pymouse.PyMouse().click(*xy, 1)
+            xy = list(map(sum, zip(xy, adjusted_basepoints)))
+        pymouse.PyMouse().move(*xy)
+        pymouse.PyMouse().click(*xy, 1)
 
     def slide(self, xy_start, xy_stop):
         pymouse.PyMouse().press(*map(sum, zip(xy_start, base_point)))

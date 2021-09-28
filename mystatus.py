@@ -42,13 +42,13 @@ class Status:
                 conditionStr = conditionStr.replace('!', ' not ')
                 return conditionStr
 
-        def transfer(self, action: str, delayTime: int = 0) -> None:
+        def transfer(self, action: str, delayTime: int = 0, args=(), kwargs={}) -> None:
                 global lastClickTime
                 if action not in self.transferDict:
                         raise Exception("act {} not in {}".format(action, self.transferDict))
                 logging.debug("CurrentStatus: {}. Take action {}".format(self.name, action))
                 func = self.transferDict[action]
-                func(self)
+                func(self, *args, **kwargs)
                 lastClickTime = time.time()
                 logging.debug("lastClickTime {}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(lastClickTime))))
                 time.sleep(delayTime)
@@ -92,141 +92,18 @@ kuloNoSuOccurPage = Status(
 )
 
 
-class HomePage(Status):
-
-        def hasKeys(self):
-                return self.iconDict['keys'].exists()
-        
-        def countKeys(self):
-                return self.iconDict['keys'].count()
-
-        def inWhichChannel(self) -> str:
-                for name, icon in self.iconDict.items():
-                        if name.endswith("Selected") and not name.endswith("NonSelected") and icon.exists():
-                                return name[:-len('Selected')]
-                raise Exception("Channel not found")
-        
-        def hasNormalNpcs(self):
-                return self.iconDict['normalNpcs'].exists()
-
-        def countNormalNpcs(self):
-                return self.iconDict['normalNpcs'].count()
-        
-        def getCurrentWorld(self):
-                pass
-
-homePage = HomePage(
-        name='homePage',
-        iconDict={
-                'pvpSelected': homePagePvpSelected,
-                'pvpNonSelected': homePagePvpNonSelected,
-                'transportGateNonSelected': homePageTransportGateNonSelected,
-                'transportGateSelected': homePageTransportGateSelected,
-                'storeNonSelected': homePageStoreNonSelected,
-                'storeSelected': homePageStoreSelected,
-                'monsterGateNonSelected': homePageMonsterGateNonSelected,
-                'monsterGateSelected': homePageMonsterGateSelected,
-                'workshopSelected': homePageWorkshopSelected,
-                'workshopNonSelected': homePageWorkshopNonSelected,
-                'keys': keysIcon,
-                'normalNpcs': normalNpcIcons,
-                'switchWorldButton': switchWorldButton
-        },
-        transferDict={
-                'selectPvp': lambda status:homePagePvpNonSelected.click(),
-                'selectTransportGate': lambda status:homePageTransportGateNonSelected.click(),
-                'selectStore': lambda status:homePageStoreNonSelected.click(),
-                'selectMonsterGate': lambda status:homePageMonsterGateNonSelected.click(),
-                'selectWorkshop': lambda status:homePageWorkshopNonSelected.click(),
-                'collectOneKey': lambda status:keysIcon.clickFirst(),
-                'collectAllKeys': lambda status:keysIcon.clickAll(),
-                'clickOneNormalNpc': lambda status:normalNpcIcons.clickFirst(),
-                'switchWorld': lambda status:switchWorldButton.click()
-        },
-        condition='pvpSelected | transportGateSelected | workshopSelected | storeSelected | monsterGateSelected'
-)
-
-recieveKeys = Status(
-        name="recieveKeys",
-        iconDict={
-                'yesIcon': generalYesButton
-        },
-        transferDict={
-                'click': lambda status:generalYesButton.click()
-        },
-        condition='homePage.check() & yesIcon',
-        level = 200
-)
-
 inDiagLog = Status(
         name="inDiagLog",
         iconDict={
-                'nextButton': diagLogNextIcon
+                'nextButton': diagLogNextIcon,
+                'title': diagLogTitleIcon,
+                'background': diagLogBackground
         },
         transferDict={
-                'next': lambda status:diagLogNextIcon.click()
+                # 'next': lambda status: diagLogNextIcon.click()
+                'next': lambda status: diagLogBackground.click()
         },
-        condition='nextButton'
-)
-
-selectDuelMode = Status(
-        name="selectDuelMode",
-        iconDict={
-                'duelButton': duelButton,
-                'autoDuelButton':  autoDuelButton
-        },
-        transferDict={
-                'duel': lambda status: duelButton.click(),
-                'autoDuel': lambda status :autoDuelButton.click()
-        },
-        condition='duelButton & autoDuelButton'
-)
-
-class FinishedStatus(Status):
-
-        def isWin(self):
-                return self.iconDict['duelWinIcon'].exists()
-        
-duelFinishedPage = FinishedStatus(
-        name="duelFinishedPage",
-        iconDict={
-                'saveVideoButton': saveVideoButton,
-                'recordButton':  recordButton,
-                'yes': generalYesButton,
-                'duelWinIcon': duelWinIcon
-        },
-        transferDict={
-                'saveVideo': lambda status:saveVideoButton.click(),
-                'record': lambda status:recordButton.click(),
-                'yes': lambda status:generalYesButton.click()
-        },
-        condition='recordButton & yes'
-)
-
-notFinishLoadingDuelResultsPage = Status(
-        name="notFinishLoadingDuelResultsPage",
-        iconDict={
-                "next": generalNextButton,
-                "title": duelResultsPageTitle
-        },
-        transferDict={
-                'randomClick': lambda status:duelResultsPageTitle.click()
-        },
-        condition="title & !next",
-        level=200
-)
-
-duelResultsPage = Status(
-        name="duelResultsPage",
-        iconDict={
-                "next": generalNextButton,
-                "title": duelResultsPageTitle
-        },
-        transferDict={
-                'next': lambda status:generalNextButton.click()
-        },
-        condition="title & next",
-        level=199,
+        condition='nextButton | background'
 )
 
 getSaiStatus = Status(
@@ -239,19 +116,5 @@ getSaiStatus = Status(
                 'yes': lambda status:generalYesButton.click()
         },
         condition="getSaiFragment",
-        level=200,
-)
-
-switchingWorldStatus = Status(
-        name="switchingWorldStatus",
-        iconDict={
-                'dmWorld': DMWorldIcon,
-                'gxWorld': GXWorldIcon
-        },
-        transferDict={
-                'switchToDMWorld': lambda status:DMWorldIcon.click(),
-                'switchToGXWorld': lambda status:GXWorldIcon.click()
-        },
-        condition="dmWorld & gxWorld",
         level=200,
 )
