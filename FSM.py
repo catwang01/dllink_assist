@@ -86,6 +86,7 @@ class FSM:
         else:
             self.unexpectedStatus = curStatus
             self.nUnexpectedStatus = 0
+        logging.debug(f"CurrentFSM: {self.name} got {self.nUnexpectedStatus} unexpected status: {self.unexpectedStatus}")
         return False
 
     def run(self, *args, **kwargs) :
