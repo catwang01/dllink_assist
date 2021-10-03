@@ -19,6 +19,7 @@ from log.log import setupLogging
 from login.fsm import LoginFSM
 from homepage.fsm import HomePageFSM
 from homepage.status import homePage
+from connectionError.status import networkConnectionPage
 
 
 setupLogging()
@@ -42,7 +43,8 @@ class StatusControlThread(threading.Thread, FSM):
         homePage,
         kuloNoSuOccurPage,
         notificationPage,
-        loginPage
+        loginPage,
+        networkConnectionPage
     ] + generalStatusList
     def __init__(self):
         super().__init__()
@@ -71,3 +73,5 @@ class StatusControlThread(threading.Thread, FSM):
                 curStatus.transfer('default')
             elif curStatus == loginPage:
                 LoginFSM().run()
+            elif curStatus == networkConnectionPage:
+                curStatus.transfer('retry')
