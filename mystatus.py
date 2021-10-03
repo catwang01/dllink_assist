@@ -42,7 +42,7 @@ class Status:
                 conditionStr = conditionStr.replace('!', ' not ')
                 return conditionStr
 
-        def transfer(self, action: str, delayTime: int = 0, args=(), kwargs={}) -> None:
+        def transfer(self, action: str, delayTime: int = 2, args=(), kwargs={}) -> None:
                 global lastClickTime
                 if action not in self.transferDict:
                         raise Exception("act {} not in {}".format(action, self.transferDict))
