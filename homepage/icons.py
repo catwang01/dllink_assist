@@ -1,7 +1,11 @@
-from icons import Icon, MultiIcon, CoordinateIcon
+from icons import Icon, MultiIcon, CoordinateIcon, Yolov5Icon
 import glob
 
 
+# keysIcon = MultiIcon(glob.glob('img/base/key*.png'))
+modelPath = '/Users/ed/Git/yolov5/runs/train/exp38/weights/best.pt'
+classes = [ 'tv', 'seller', 'unionForce' , 'pvp' , 'key' , 'normalNpc' ]
+# keysIcon = Yolov5Icon(modelPath, name='keysIcon', class_ = 'key', classes=classes)
 keysIcon = MultiIcon(glob.glob('img/base/key*.png'))
 
 homePageTransportGateSelected = Icon('img/home/channels/transport_gate_selected.png')
@@ -19,7 +23,8 @@ homePageMonsterGateNonSelected = Icon('img/home/channels/monster_gate_non_select
 homePageWorkshopSelected = Icon('img/home/channels/workshop_selected.png')
 homePageWorkshopNonSelected = Icon('img/home/channels/workshop_non_selected.png')
 
-normalNpcIcons = MultiIcon(glob.glob('img/npc/npc*.png'))
+normalNpcIcons = Yolov5Icon(modelPath, name='normalNpcIcons', class_ = 'normalNpc', classes=classes)
+# normalNpcIcons = MultiIcon(glob.glob('img/npc/npc*.png'))
 
 saiEnterButton = CoordinateIcon([[190, 620], [270, 650]])
 

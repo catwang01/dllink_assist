@@ -4,6 +4,7 @@ import os
 import logging
 import glob
 from tool import HashableNdArray
+from inference import DetectObject
 
 class Icon:
         def __init__(self, path, name=None, similarity=0.8, check=True) -> None:
@@ -108,6 +109,40 @@ class CoordinateIcon(Icon):
                 img = tool.get_appshot()
                 img = tool.get_appshot()[x[1]:y[1], x[0]:y[0]]
                 plt.imshow(img[..., -1::-1])
+
+
+class Yolov5Icon(MultiIcon):
+        def __init__(self, path, name=None, class_=None, classes=None, check=True) -> None:
+                self.path = path
+                self.name = name
+                if class_ is None:
+                        raise Exception("Yolov5Icon: class_ can be None")
+                self.class_ = class_
+                self.classes = classes
+                self.class2Index = {name: i for i, name in enumerate(classes)}
+                if check and not os.path.exists(self.path):
+                        raise Exception("Can't find model weights: {}".format(self.path))
+                self.model = DetectObject(weights=self.path, classes=self.classes)
+                self._icons = None
+
+        @property
+        def icons(self):
+                self._icons = []
+                img, predResults = self.model.detect(tool.get_appshot())
+                self.img = img
+                for predResult in predResults:
+                        if predResult['cls'] == self.class2Index[self.class_]:
+                                position = [predResult['leftTop'], predResult['rightBottom']]
+                                position = [
+                                        (position[0][0] / 2, position[0][1] / 2),
+                                        (position[1][0] / 2, position[1][1] / 2)
+                                ]
+                                icon = CoordinateIcon(position=position)
+                                self._icons.append(icon)
+                return self._icons
+
+        def showImg(self):
+                tool.showImg(self.img)
 
 startGameIcon = Icon('img/base/start_game.png')
 
