@@ -95,7 +95,10 @@ class CoordinateIcon(Icon):
             return self._position
 
         def click(self, x=0, y=0):
-            return super().click(x=x, y=y)
+                centerPoint = tool.get_center_point(self.position)
+                centerPoint = [x + centerPoint[0] / 2, y + centerPoint[1] / 2]
+                tool.Operation().click(centerPoint)
+                logging.debug(f"Click {self.position} finished")
 
         def exists(self) -> bool:
             return True
