@@ -74,7 +74,9 @@ def find_img(background, template, similarity=0.8):
         return None
     else:
         matchedImg = background[start_point[1]: end_point[1], start_point[0]: end_point[0]]
-        isColorClose = np.isclose(matchedImg.mean(), template.mean(), 0.1)
+        diff = np.abs(matchedImg.mean() - template.mean()) / template.mean()
+        isColorClose = diff < 0.2
+        logging.debug(f"diff {diff} isColorClose: {isColorClose}")
         if not isColorClose:
             return None
         return [start_point, end_point]
