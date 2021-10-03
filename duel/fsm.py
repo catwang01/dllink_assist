@@ -6,6 +6,7 @@ from general.status import generalStatusList
 from login.status import loginPage
 from login.fsm import LoginFSM
 from homepage.status import homePage
+from transportGateDuel.status import transportGateHomePage
 
 
 class DuelFSM(FSM):
@@ -17,7 +18,9 @@ class DuelFSM(FSM):
         getSaiStatus,
         loginPage,
         inDuelStatus,
-        inDiagLog
+        inDiagLog,
+        transportGateHomePage,
+        homePage
     ] + generalStatusList
 
     name = 'DuelFSM'
@@ -53,7 +56,9 @@ class DuelFSM(FSM):
                 curStatus.transfer("default")
             elif curStatus == loginPage:
                 LoginFSM().run()
-            elif curStatus in {inDiagLog, homePage}:
+            elif curStatus == inDiagLog:
+                curStatus.transfer('next')
+            elif curStatus in {transportGateHomePage, homePage}:
                 break
             else:
                 if self.handleUnexpectedStatus(curStatus):
