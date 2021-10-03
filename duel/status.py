@@ -5,24 +5,22 @@ from mystatus import Status
 class SelectDuelMode(Status):
 
     def leftZeroAutoDuel(self):
-        return False
-        # self.iconDict['leftZeroButton'].exists()
-        # self.iconDict['leftZeroButton'].showImg()
+        return self.iconDict['autoDuelOffButton'].exists()
 
 selectDuelMode = SelectDuelMode(
         name="selectDuelMode",
         iconDict={
                 'duelButton': duelButton,
                 'autoDuelButton':  autoDuelButton,
-                'leftZeroButton': leftZeroAutoButton,
-                'return': generalReturnButton
+                'autoDuelOffButton': autoDuelOffButton,
+                'returnButton': generalReturnButton
         },
         transferDict={
                 'duel': lambda status: duelButton.click(),
                 'autoDuel': lambda status :autoDuelButton.click(),
                 'return': lambda status: generalReturnButton.click()
         },
-        condition='duelButton & autoDuelButton'
+        condition='duelButton | autoDuelButton | autoDuelOffButton'
 )
 
 class FinishedStatus(Status):
