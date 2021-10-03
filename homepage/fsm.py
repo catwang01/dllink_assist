@@ -22,6 +22,35 @@ from log.log import setupLogging
 
 setupLogging()
 
+class CollectKeyFSM(FSM):
+
+    statusList = [
+        homePage
+    ] + generalStatusList
+    statusList.sort(key=lambda status: status.level, reverse=True)
+
+    name = "CollectKeyFSM"
+
+    def run(self):
+        self.beforeRun()
+        nCollected = 0
+        while True:
+            curStatus = self.getCurrentStatus()
+            if curStatus == homePage:
+                nKeys = curStatus.countKeys()
+                logging.info("Find {} keys in current channel".format(nKeys))
+                if nKeys > 0:
+                    curStatus.transfer('collectOneKey')
+                    nCollected += 1
+                else:
+                    break
+            elif curStatus in generalStatusList:
+                curStatus.transfer('default')
+            else:
+                break
+        self.afterRun()
+        return nCollected
+
 class HomePageFSM(FSM):
 
     statusList = [
@@ -89,36 +118,29 @@ class HomePageFSM(FSM):
                 startTime = time.time()
                 nTotalCollected = 0
                 while len(channels):
+                    if curStatus == homePage:
                     channel = random.choice(channels)
-                    nCollected = 0
                     logging.debug("goto {}".format(channel))
                     currentChannel = curStatus.inWhichChannel()
+                        nCollected = CollectKeyFSM().run()
                     logging.debug("current: {} goto: {}".format(currentChannel, channel))
                     if  currentChannel != channel:
                         curStatus.transfer('select{}'.format(capitalize(channel)))
                     else:
                         logging.debug("Staying current channel")
-                    logging.info("Collecting keys in {}".format(channel))
-                    while True:
-                        curStatus = self.getCurrentStatus()
-                        if curStatus == homePage:
-                            nKeys = curStatus.countKeys()
-                            if nKeys > 0:
-                                logging.info("Find {} keys in current channel".format(nKeys))
-                                curStatus.transfer('collectOneKey')
-                                nCollected += 1
+                        logging.info(f"Collecting keys in channel {channel}")
+
+                        logging.info(f"Collected {nCollected} keys in current channel: {channel}")
+                        channels.remove(channel)
+                        logging.info(f"Total channels: {nChannels} Collected: {nChannels - len(channels)} Left: {len(channels)}")
+                        nTotalCollected += nCollected 
                             else:
-                                logging.info("Find no keys in current channel!".format(nKeys))
                                 break
-                        else:
-                            return
-                    logging.info("Collected {} keys in current channel: {}".format(nCollected, channel))
-                    channels.remove(channel)
-                    logging.info("Total channels: {} Collected: {} Left: {}".format(nChannels, nChannels - len(channels), len(channels)))
-                    nTotalCollected += nCollected 
                 endTime = time.time()
                 logging.info("Collecting finished! TimeUsed: {}s Total collected keys: {}".format(int(endTime - startTime), nTotalCollected))
                 break
+            elif curStatus in generalStatusList:
+                curStatus.transfer('default')
             else:
                 if self.handleUnexpectedStatus(curStatus):
                     break
