@@ -155,10 +155,7 @@ class HomePageFSM(FSM):
         while True:
             curStatus = self.getCurrentStatus()
             if curStatus == inDiagLog:
-                if nDiagLog >= 1:
                     curStatus.transfer('next', 5)
-                else:
-                    curStatus.transfer('next')
                 nDiagLog += 1
             elif curStatus == selectDuelMode:
                 DuelFSM().run()
@@ -168,7 +165,9 @@ class HomePageFSM(FSM):
                 LoginFSM().run()
             elif curStatus == homePage:
                 if nDiagLog >= 2:
-                    print('Duel finished! Result: {}'.format('Won' if isWin else 'Lost'))
+                    print(f"Duel finished! Result: {'Won' if isWin else 'Lost'}")
+                else:
+                    print('Homepage! Not Duel screen! Returned!')
                     break
             else:
                 if self.handleUnexpectedStatus(curStatus):
@@ -211,6 +210,10 @@ class HomePageFSM(FSM):
                             else:
                                 logging.info("Find no normal npcs in current channel!".format(nNpcs))
                                 break
+                        elif curStatus == inDiagLog:
+                            curStatus.transfer('next')
+                        elif curStatus in generalStatusList:
+                            curStatus.transfer('default')
                         else:
                             return 
                     logging.info("Searched {} normal npcs in current channel: {}".format(nSearched, channel))
@@ -255,6 +258,8 @@ class HomePageFSM(FSM):
             elif curStatus == transportGateHomePage:
                     TransportGateFSM().run(roleName, 'level{}'.format(level))
                     break
+            elif curStatus in generalStatusList:
+                curStatus.transfer("default")
             else:
                 if self.handleUnexpectedStatus(curStatus):
                     break
