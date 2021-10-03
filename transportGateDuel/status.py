@@ -45,8 +45,10 @@ transportGateHomePage = TransportGateHomePage(
                 'gxTransportGateItem': gxTransportGateItem,
                 'dmTransportGateItem': dmTransportGateItem,
                 'selectRoleIcon': selectTransportGateRoles,
+
                 'yukijudaiIcon': yukijudaiIcon,
                 'tianjoyinIcon': tianjoyinIcon,
+                'mutouyougiIcon': mutouyougiIcon,
 
                 'yesIcon': generalConfirmButton,
                 'closeIcon': generalCloseButton,
@@ -65,6 +67,7 @@ transportGateHomePage = TransportGateHomePage(
                 'selectGX': lambda status: gxTransportGateItem.click(),
                 'yukijudai': lambda status: yukijudaiIcon.click(),
                 'tianjoyin': lambda status: tianjoyinIcon.click(),
+                'mutouyougi': lambda status: mutouyougiIcon.click(),
                 'yes': lambda status: generalConfirmButton.click(),
                 'close': lambda status: generalCloseButton.click(),
                 'level10': lambda status: level10Button.click(),

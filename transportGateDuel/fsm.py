@@ -24,7 +24,7 @@ class TransportGateFSM(FSM):
         self.autoDuelable = True
 
     def getWorldFromRole(self, roleName):
-        return {'yukijudai': 'gx', 'tianjoyin': 'gx'}.get(roleName, None)
+        return {'yukijudai': 'gx', 'tianjoyin': 'gx', 'mutouyougi': 'dm'}.get(roleName, None)
 
     def run(self, roleName: str, level: str):
         self.beforeRun()

@@ -14,6 +14,7 @@ dmTransportGateItem = Icon(f'{imgDirPath}/dmTransportGate.png')
 
 yukijudaiIcon = Icon(f'{imgDirPath}/yukijudai.png')
 tianjoyinIcon = Icon(f'{imgDirPath}/tianjioyin.png')
+mutouyougiIcon = Icon(f'{imgDirPath}/mutouyougi.png')
 
 transportGateDuelButton = Icon(f'{imgDirPath}/duelButton.png')
 levelSelected = MultiIcon(glob.glob(f'{imgDirPath}/levels/level*Selected.png'), similarity=0.95)
