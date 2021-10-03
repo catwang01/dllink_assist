@@ -54,16 +54,17 @@ class TransportGateFSM(FSM):
                         else:
                             nowStatus.transfer('select{}'.format(world.upper()))
                 else:
-                    if nowStatus.getLevel() != level:
-                        nowStatus.transfer(level)
-                    else:
-                        nowStatus.transfer('duel')
+                    if nowStatus.canGetLevel():
+                        if nowStatus.getLevel() != level:
+                            nowStatus.transfer(level)
+                        else:
+                            nowStatus.transfer('duel')
             elif nowStatus == npcAlreadyExistsStatus:
                 nowStatus.transfer('confirm')
             elif nowStatus == inDiagLog:
                 nowStatus.transfer('next')
             elif nowStatus == selectDuelMode:
-                self.isautoDuelable = DuelFSM().run()
+                self.autoDuelable = DuelFSM().run()
             elif nowStatus in generalStatusList:
                 nowStatus.transfer("default")
             elif nowStatus == homePage:

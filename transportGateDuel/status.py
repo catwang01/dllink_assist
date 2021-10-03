@@ -2,7 +2,7 @@ from mystatus import Status
 import re
 from typing import Optional, Dict
 from transportGateDuel.icons import *
-from general.status import generalConfirmButton, generalCloseButton, generalYesButton, generalCancelButton
+from general.status import generalConfirmButton, generalCloseButton, generalYesButton, generalCancelButton, generalReturnButton
 import logging
 from log.log import setupLogging
 
@@ -30,8 +30,11 @@ class TransportGateHomePage(Status):
     def hasClose(self):
         return self.iconDict['closeIcon'].exists()
 
+    def canGetLevel(self):
+        return self.iconDict['levelSelected'].exists()
+
     def getLevel(self):
-        iconPath = levelSelected.getFirstExistIcon().path
+        iconPath = self.iconDict['levelSelected'].getFirstExistIcon().path
         reg = re.search("level\d+", iconPath)
         if reg is None:
             raise Exception("Can't exact level from path: {}".format(iconPath))
@@ -52,6 +55,7 @@ transportGateHomePage = TransportGateHomePage(
 
                 'yesIcon': generalConfirmButton,
                 'closeIcon': generalCloseButton,
+                'returnIcon': generalReturnButton,
 
                 'level10Icon': level10Button,
                 'level20Icon': level20Button,
@@ -71,7 +75,8 @@ transportGateHomePage = TransportGateHomePage(
                 'yes': lambda status: generalConfirmButton.click(),
                 'close': lambda status: generalCloseButton.click(),
                 'level10': lambda status: level10Button.click(),
-                'duel': lambda status: transportGateDuelButton.click()
+                'duel': lambda status: transportGateDuelButton.click(),
+                'return': lambda status: generalReturnButton.click()
         },
         condition="title",
         level=200,
