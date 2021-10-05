@@ -119,23 +119,23 @@ class HomePageFSM(FSM):
                 nTotalCollected = 0
                 while len(channels):
                     if curStatus == homePage:
-                    channel = random.choice(channels)
-                    logging.debug("goto {}".format(channel))
-                    currentChannel = curStatus.inWhichChannel()
+                        channel = random.choice(channels)
+                        logging.debug("goto {}".format(channel))
+                        currentChannel = curStatus.inWhichChannel()
                         nCollected = CollectKeyFSM().run()
-                    logging.debug("current: {} goto: {}".format(currentChannel, channel))
-                    if  currentChannel != channel:
-                        curStatus.transfer('select{}'.format(capitalize(channel)))
-                    else:
-                        logging.debug("Staying current channel")
+                        logging.debug("current: {} goto: {}".format(currentChannel, channel))
+                        if  currentChannel != channel:
+                            curStatus.transfer('select{}'.format(capitalize(channel)))
+                        else:
+                            logging.debug("Staying current channel")
                         logging.info(f"Collecting keys in channel {channel}")
 
                         logging.info(f"Collected {nCollected} keys in current channel: {channel}")
                         channels.remove(channel)
                         logging.info(f"Total channels: {nChannels} Collected: {nChannels - len(channels)} Left: {len(channels)}")
                         nTotalCollected += nCollected 
-                            else:
-                                break
+                    else:
+                        break
                 endTime = time.time()
                 logging.info("Collecting finished! TimeUsed: {}s Total collected keys: {}".format(int(endTime - startTime), nTotalCollected))
                 break
@@ -155,7 +155,7 @@ class HomePageFSM(FSM):
         while True:
             curStatus = self.getCurrentStatus()
             if curStatus == inDiagLog:
-                    curStatus.transfer('next', 5)
+                curStatus.transfer('next', 5)
                 nDiagLog += 1
             elif curStatus == selectDuelMode:
                 DuelFSM().run()
@@ -168,7 +168,7 @@ class HomePageFSM(FSM):
                     print(f"Duel finished! Result: {'Won' if isWin else 'Lost'}")
                 else:
                     print('Homepage! Not Duel screen! Returned!')
-                    break
+                break
             else:
                 if self.handleUnexpectedStatus(curStatus):
                     break
