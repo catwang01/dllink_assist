@@ -25,7 +25,7 @@ class Icon:
 
         @property
         def position(self):
-                return tool.find_img(HashableNdArray(tool.get_appshot()), self.path, self.similarity)
+                return tool.find_img(tool.get_appshot(), self.path, self.similarity)
 
         def exists(self) -> bool:
                 return self.position is not None

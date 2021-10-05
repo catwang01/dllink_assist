@@ -268,12 +268,12 @@ class HomePageFSM(FSM):
 
     def run(self):
         for world in ['DMWorld', 'GXWorld']:
-            # self.changeWorld(world)
-            # time.sleep(3)
-            # self.collectKeys()
-            # time.sleep(3)
-            # self.duelWithNormalNpcs()
-            # time.sleep(3)
-            self.runSai()
+            self.changeWorld(world)
             time.sleep(3)
-            self.transportGateDuel(roleName='tianjoyin')
+            self.collectKeys()
+            time.sleep(3)
+            self.duelWithNormalNpcs()
+            time.sleep(3)
+            # self.runSai()
+            # time.sleep(3)
+            # self.transportGateDuel(roleName='tianjoyin')

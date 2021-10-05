@@ -54,17 +54,46 @@ def showImg(img):
 def capitalize(s):
     return s[0].upper() + s[1:]
 
-@functools.lru_cache()
+def wrapHashableNdArray(func):
+    def wrapped(*args, **kwargs):
+        args = list(args)
+        for i, arg in enumerate(args):
+            if isinstance(arg, np.ndarray):
+                args[i] = HashableNdArray(arg)
+        for key, arg in kwargs.items():
+            if isinstance(arg, np.ndarray):
+                kwargs[key] = HashableNdArray(arg)
+        return func(*args, **kwargs)
+    return wrapped
+
+def unwrapHashableNdArray(func):
+    def wrapped(*args, **kwargs):
+        args = list(args)
+        for i, arg in enumerate(args):
+            if isinstance(arg, HashableNdArray):
+                args[i] = arg.array
+        for key, arg in kwargs.items():
+            if isinstance(arg, HashableNdArray):
+                kwargs[key] = arg.array
+        return func(*args, **kwargs)
+    return wrapped
+
+def lru_cache(*args, **kwargs):
+    def firstWrapped(func):
+        @wrapHashableNdArray
+        @functools.lru_cache(*args, **kwargs)
+        @unwrapHashableNdArray
+        def secondWrapped(*args, **kwargs):
+            return func(*args, **kwargs)
+        return secondWrapped
+    return firstWrapped
+    
+@lru_cache()
 def find_img(background, template, similarity=0.8):
     if isinstance(background, str):
         background = cv.imread(background)
-    elif isinstance(background, HashableNdArray):
-        background = background.array
-
     if isinstance(template, str):
         template = cv.imread(template)
-    elif isinstance(template, HashableNdArray):
-        template = template.array
     
     result = cv.matchTemplate(background, template, cv.TM_CCOEFF_NORMED) 
     _, sim, _, start_point = cv.minMaxLoc(result)
@@ -145,7 +174,7 @@ class Operation:
 
     def reset_base_point(self):
         global base_point
-        xy = find_img(HashableNdArray(capture_screenshot()), 'img/base/head.png')
+        xy = find_img(capture_screenshot(), 'img/base/head.png')
         if xy == None:
             logging.error('can not find base_point')
             assert(None)
