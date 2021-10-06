@@ -8,3 +8,5 @@ networkx
 matplotlib
 dict_recursive_update
 schedule
+UnityPy
+pexpect
