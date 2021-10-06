@@ -146,7 +146,7 @@ def get_screenshot():
 
 def get_appshot():
     global source
-    appshot = source[base_point[1]:(base_point[1] + 1450), base_point[0]:(base_point[0] + 900)]
+    appshot = source[base_point[1]:(base_point[1] + 1450), base_point[0]:(base_point[0] + 900)].copy()
     return appshot
 
 base_point = None
