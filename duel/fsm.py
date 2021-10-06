@@ -56,9 +56,7 @@ class DuelFSM(FSM):
                 curStatus.transfer("default")
             elif curStatus == loginPage:
                 LoginFSM().run()
-            elif curStatus == inDiagLog:
-                curStatus.transfer('next')
-            elif curStatus in {transportGateHomePage, homePage}:
+            elif curStatus in {transportGateHomePage, homePage, inDiagLog}:
                 break
             else:
                 if self.handleUnexpectedStatus(curStatus):

@@ -5,7 +5,7 @@ from mystatus import Status
 class SelectDuelMode(Status):
 
     def leftZeroAutoDuel(self):
-        return self.iconDict['autoDuelOffButton'].exists()
+        return not self.iconDict['autoDuelButton'].exists()
 
 selectDuelMode = SelectDuelMode(
         name="selectDuelMode",
