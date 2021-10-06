@@ -7,10 +7,11 @@ from tool import HashableNdArray
 from inference import DetectObject
 
 class Icon:
-        def __init__(self, path, name=None, similarity=0.8, check=True) -> None:
+        def __init__(self, path, name=None, similarity=0.8, isCloseThreshold=0.2, check=True) -> None:
                 self.path = path
                 self.name = name
                 self.similarity = similarity
+                self.isCloseThreshold = isCloseThreshold
                 if check and not os.path.exists(self.path):
                         raise Exception("Can't find img: {}".format(self.path))
 

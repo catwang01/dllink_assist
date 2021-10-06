@@ -2,7 +2,7 @@ from icons import Icon, MultiIcon
 import glob
 
 duelButton = Icon('img/duelButton.png')
-autoDuelButton = MultiIcon(glob.glob('img/autoDuelButton*.png'))
+autoDuelButton = MultiIcon(glob.glob('img/autoDuelButton*.png'), isCloseThreshold=1)
 autoDuelOffButton = Icon('img/autoDuelOffButton.png')
 
 saveVideoButton = Icon('img/saveVideo.png')

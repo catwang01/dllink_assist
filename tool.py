@@ -89,7 +89,7 @@ def lru_cache(*args, **kwargs):
     return firstWrapped
     
 @lru_cache()
-def find_img(background, template, similarity=0.8):
+def find_img(background, template, similarity=0.8, closeThreshold=0.2):
     if isinstance(background, str):
         background = cv.imread(background)
     if isinstance(template, str):
@@ -104,7 +104,7 @@ def find_img(background, template, similarity=0.8):
     else:
         matchedImg = background[start_point[1]: end_point[1], start_point[0]: end_point[0]]
         diff = np.abs(matchedImg.mean() - template.mean()) / template.mean()
-        isColorClose = diff < 0.2
+        isColorClose = diff < closeThreshold
         logging.debug(f"diff {diff} isColorClose: {isColorClose}")
         if not isColorClose:
             return None
