@@ -30,5 +30,5 @@ saiEnterButton = CoordinateIcon([[190, 620], [270, 650]])
 
 switchWorldButton = CoordinateIcon(position=[(20, 210), (40, 230)])
 
-DMWorldIcon = MultiIcon(['img/DMWorldIcon_load.png', 'img/DMWorldIcon_nonload.png'])
+DMWorldIcon = MultiIcon(['img/DMWorldIcon_load.png', 'img/DMWorldIcon_nonload.png', 'img/DMWorldIcon_nonload2.png'])
 GXWorldIcon = MultiIcon(['img/GXWorldIcon_load.png', 'img/GXWorldIcon_nonload.png'])

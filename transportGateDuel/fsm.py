@@ -3,7 +3,7 @@ from transportGateDuel.status import *
 from mystatus import inDiagLog
 from homepage.status import homePage
 from duel.status import selectDuelMode
-from duel.fsm import DuelFSM
+from duel.fsm import AutoDuelFSM, DuelFSM, ManualDuelFSM
 from general.status import generalStatusList
 
 class TransportGateFSM(FSM):
@@ -26,14 +26,14 @@ class TransportGateFSM(FSM):
     def getWorldFromRole(self, roleName):
         return {'yukijudai': 'gx', 'tianjoyin': 'gx', 'mutouyougi': 'dm'}.get(roleName, None)
 
-    def run(self, roleName: str, level: str):
+    def run(self, roleName: str, level: str, duelFSM):
         self.beforeRun()
         world = self.getWorldFromRole(roleName)
         clicked = False
         while True:
             nowStatus = self.getCurrentStatus()
             if nowStatus == transportGateHomePage:
-                if not self.autoDuelable:
+                if isinstance(duelFSM, AutoDuelFSM) and not self.autoDuelable:
                     nowStatus.transfer('return')
                 elif not nowStatus.isCurrentRole:
                     if not nowStatus.isSwitchingRole():
@@ -64,7 +64,7 @@ class TransportGateFSM(FSM):
             elif nowStatus == inDiagLog:
                 nowStatus.transfer('next')
             elif nowStatus == selectDuelMode:
-                self.autoDuelable = DuelFSM().run()
+                self.autoDuelable = DuelFSM().run(duelFSM)
             elif nowStatus in generalStatusList:
                 nowStatus.transfer("default")
             elif nowStatus == homePage:

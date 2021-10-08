@@ -42,7 +42,12 @@ class Status:
                 conditionStr = conditionStr.replace('!', ' not ')
                 return conditionStr
 
-        def transfer(self, action: str, delayTime: int = 2, args=(), kwargs={}) -> None:
+        def hasButton(self, buttonName):
+                if buttonName not in self.iconDict:
+                        raise Exception(f'Status: {self.name} has no button {buttonName}')
+                return self.iconDict[buttonName].exists()
+
+        def transfer(self, action: str, delayTime: int = 0, args=(), kwargs={}) -> None:
                 global lastClickTime
                 if action not in self.transferDict:
                         raise Exception("act {} not in {}".format(action, self.transferDict))
@@ -50,8 +55,9 @@ class Status:
                 func = self.transferDict[action]
                 func(self, *args, **kwargs)
                 lastClickTime = time.time()
-                logging.debug("lastClickTime {}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(lastClickTime))))
-                time.sleep(delayTime)
+                logging.debug(f"lastClickTime {tool.formatTime(lastClickTime)}")
+                if delayTime > 0: 
+                        tool.sleep(delayTime)
 
 class EmptyStatus(Status):
         pass

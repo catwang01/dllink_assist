@@ -9,6 +9,7 @@ FilePath: \dllink_assist\transfer.py
 
 import threading
 import logging
+from duel.fsm import ManualDuelFSM
 
 import tool
 from FSM import FSM
@@ -60,6 +61,7 @@ class StatusControlThread(threading.Thread, FSM):
             # notificationPage.check()
             # homePage.check()
             # self.maze()
+            # ManualDuelFSM().run()
             curStatus = self.getCurrentStatus()
             if curStatus == startPage:
                 curStatus.transfer('startGame')

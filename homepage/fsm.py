@@ -3,6 +3,7 @@ import random
 import time
 
 
+import tool
 from FSM import FSM
 from general.status import generalStatusList 
 from login.status import loginPage
@@ -269,11 +270,15 @@ class HomePageFSM(FSM):
     def run(self):
         for world in ['DMWorld', 'GXWorld']:
             self.changeWorld(world)
-            time.sleep(3)
+            tool.sleep(3)
             self.collectKeys()
-            time.sleep(3)
+            tool.sleep(3)
             self.duelWithNormalNpcs()
-            time.sleep(3)
+            tool.sleep(3)
             # self.runSai()
-            # time.sleep(3)
-            # self.transportGateDuel(roleName='tianjoyin')
+            # tool.sleep(3)
+        # for i in range(5):
+        #     # tianjoyin
+        #     # mutouyougi
+        #     self.transportGateDuel(roleName='yukijudai')
+        #     tool.sleep(3)

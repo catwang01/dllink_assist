@@ -1,6 +1,8 @@
+from typing import Dict, Optional
 from duel.icons import *
 from general.icons import generalReturnButton, generalYesButton, generalNextButton
 from mystatus import Status
+from card import Card
 
 class SelectDuelMode(Status):
 
@@ -16,8 +18,8 @@ selectDuelMode = SelectDuelMode(
                 'returnButton': generalReturnButton
         },
         transferDict={
-                'duel': lambda status: duelButton.click(),
-                'autoDuel': lambda status :autoDuelButton.click(),
+                'manualduel': lambda status: duelButton.click(),
+                'autoDuel': lambda status: autoDuelButton.click(),
                 'return': lambda status: generalReturnButton.click()
         },
         condition='duelButton | autoDuelButton | autoDuelOffButton'
@@ -47,13 +49,14 @@ duelFinishedPage = FinishedStatus(
 class DuelResultsPage(Status):
 
         def isLoaded(self):
-                return self.iconDict['next'].exists()
+                return self.iconDict['next'].exists() or self.iconDict['yes'].exists()
 
 duelResultsPage = DuelResultsPage(
         name="duelResultsPage",
         iconDict={
                 "next": generalNextButton,
-                "title": duelResultsPageTitle
+                "title": duelResultsPageTitle,
+                "yes": generalYesButton
         },
         transferDict={
                 'next': lambda status: generalNextButton.click(),
@@ -69,7 +72,104 @@ inDuelStatus = Status(
                 "autoControlButton": autoControlButton
         },
         transferDict={
-                'wait': lambda x: x
+                'wait': lambda status: status
         },
         condition="autoControlButton",
+)
+
+class ManualDuelStatus(Status):
+
+        def __init__(self, name: str, iconDict: Dict[str, Icon], transferDict, condition: str, subStatus: Optional[Dict[str, 'Status']] = None, level: str = 0, *args, **kwargs) -> None:
+            super().__init__(name, iconDict, transferDict, condition, subStatus=subStatus, level=level, *args, **kwargs)
+            if 'stages' not in kwargs:
+                raise Exception(f'ManualDuelStatus requires stages!')
+            self.stages = kwargs['stages']
+
+        def getCurrentStage(self):
+                for stage in self.stages:
+                        if stage.exists():
+                                return stage
+                return None
+
+        def hasEndTurnButton(self):
+                return self.iconDict['endTurnButton'].exists()
+        
+        def hasBattleButton(self):
+                return self.iconDict['battleButton'].exists()
+
+        def hasActionButton(self):
+                return self.iconDict['actionButton'].exists()
+
+        def canUseSkill(self):
+                return self.iconDict['skillButton'].exists()
+
+        def isFirstTurn(self):
+                return self.iconDict['firstTurnIcon'].exists()
+
+
+useSkillPage = Status(
+        name = 'useSkillPage',
+        iconDict={
+                'useSkillButton': useSkillButton,
+                'useSkillPageTitle': useSkillPageTitle
+        },
+        transferDict={
+                'useSkill': lambda status: useSkillButton.click()
+        },
+        condition='useSkillPageTitle',
+        level=200
+)
+
+manualDuelStatus = ManualDuelStatus(
+        name="manualDuelStatus",
+        iconDict={
+                "autoControlButton": autoControlButton,
+                "autoControlOffButton": autoControlOffButton,
+                "actionButton": actionButton,
+                "battleButton": battleButton,
+                'endTurnButton': endTurnButton,
+                'drawCardIcon': drawCardIcon,
+                'skillButton': skillButton,
+                'firstTurnIcon': firstTurnIcon,
+                'sumonButton': sumonButton,
+                'setCardButton': setCardButton,
+                'useCardButton': useCardButton,
+                'perspectiveSwitchButton': perspectiveSwitchButton,
+                'settingButton': settingButton
+        },
+        transferDict={
+                'wait': lambda status: status,
+                "showAction": lambda status: actionButton.click(),
+                "battle": lambda status: battleButton.click(),
+                "endTurn": lambda status: endTurnButton.click(),
+                "drawCard": lambda status: drawCardIcon.click(),
+                'clickUseSkillButton': lambda status: skillButton.click(),
+                'sumon': lambda status: sumonButton.click(),
+                'useCard': lambda status: useCardButton.click()
+        },
+        condition="settingButton",
+        stages = [
+                yourDrawCardPhraseIcon,
+                yourMainPhraseIcon,
+                yourBattlePhraseIcon,
+        ]
+)
+
+def selectTargetByCard(status, card):
+        if isinstance(card, Card):
+                card.init()
+        card.click()
+
+selectTargetPage = Status(
+        name="selectTargetPage",
+        iconDict={
+                "title": selectTargetPageTitle,
+                "confirmButton": selectTargetConfirmButton
+        },
+        transferDict={
+                "selectTargetByCard": selectTargetByCard,
+                "confirm": lambda status: selectTargetConfirmButton.click()
+        },
+        condition="title",
+        level=200
 )

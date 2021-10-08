@@ -20,11 +20,51 @@ import time
 import subprocess
 import os
 import functools
+import tool
+from const import APP_HEIGHT, APP_PIXEL_HEIGHT, APP_PIXEL_WIDTH, APP_WIDTH, SCREEN_HEIGHT, SCREEN_SAMPLE_RATE
 
 template = None
 
+class TimerInnerStream:
+
+    def __init__(self, func) -> None:
+        self.func = func
+
+    def write(self, *args, **kwargs):
+        self.func(*args, **kwargs)
+
+class Timer:
+
+    def __init__(self, desc="Timer", stdout=None):
+        self.desc = desc
+        self.start = 0
+        self.stdout = None
+        if stdout:
+            if callable(stdout):
+                stdout = TimerInnerStream(stdout)
+            self.stdout = stdout
+        
+    def __enter__(self):
+        self.stdout.write("{} start!".format(self.desc))
+        self.start = time.time()
+        
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.stdout.write("{} end! Time used: {}s".format(self.desc, time.time() - self.start))
+
+def sleep(t):
+    logging.debug(f'Sleep for {t}s')
+    time.sleep(t)
+
+def formatTime(timestamp=None):
+    if timestamp is None:
+        timestamp = time.time()
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp))
+
 def getNparam(func):
     return len(inspect.signature(func).parameters)
+
+def isValidAPPPoint(point):
+    return 0 <= point[0] <= APP_PIXEL_WIDTH and 0 <= point[1] <= APP_PIXEL_HEIGHT
 
 def move(position, xy):
     x, y = xy
@@ -48,8 +88,11 @@ class HashableNdArray:
     def __eq__(self, o: object) -> bool:
         return id(o)
 
-def showImg(img):
-    plt.imshow(img[..., -1::-1])
+def imshow(img):
+    if img.shape[-1] == 3:
+        plt.imshow(cv.cvtColor(img, cv.COLOR_BGR2RGB))
+    else:
+        plt.imshow(img, cmap=plt.gray())
 
 def capitalize(s):
     return s[0].upper() + s[1:]
@@ -89,7 +132,7 @@ def lru_cache(*args, **kwargs):
     return firstWrapped
     
 @lru_cache()
-def find_img(background, template, similarity=0.8, closeThreshold=0.2):
+def find_img(background, template, similarity=0.8, colorCloseThreshold=0.2):
     if isinstance(background, str):
         background = cv.imread(background)
     if isinstance(template, str):
@@ -104,11 +147,96 @@ def find_img(background, template, similarity=0.8, closeThreshold=0.2):
     else:
         matchedImg = background[start_point[1]: end_point[1], start_point[0]: end_point[0]]
         diff = np.abs(matchedImg.mean() - template.mean()) / template.mean()
-        isColorClose = diff < closeThreshold
-        logging.debug(f"diff {diff} isColorClose: {isColorClose}")
+        isColorClose = diff < colorCloseThreshold
+        logging.debug(f"diff {diff:1.3} isColorClose: {isColorClose}")
         if not isColorClose:
             return None
         return [start_point, end_point]
+
+@lru_cache()
+def cachedDetectAndCompute(detector, *args, **kwargs):
+    return detector.detectAndCompute(*args, **kwargs)
+
+@lru_cache()
+def find_img_by_descriptor(img_object, 
+                           img_scene, 
+                           showImg=False,
+                           distanceThreshold=None,
+                           detector=None):
+    if img_object.ndim == 3:
+        img_object = cv.cvtColor(img_object, cv.COLOR_BGR2GRAY)
+    if img_scene.ndim == 3:
+        img_scene = cv.cvtColor(img_scene, cv.COLOR_BGR2GRAY)
+    if distanceThreshold is None:
+        distanceThreshold = 0.75
+    #-- Step 1: Detect the keypoints using SURF Detector, compute the descriptors
+    if detector is None:
+        detector = cv.xfeatures2d.SIFT_create()
+    with Timer('detectAndCompute', stdout=logging.debug):
+        keypoints_obj, descriptors_obj = cachedDetectAndCompute(detector, img_object, None)
+        keypoints_scene, descriptors_scene = cachedDetectAndCompute(detector, img_scene, None)
+    # #-- Step 2: Matching descriptor vectors with a FLANN based matcher
+    # matcher = cv.DescriptorMatcher_create(cv.DescriptorMatcher_FLANNBASED)
+    # knn_matches = matcher.knnMatch(descriptors_obj, descriptors_scene, 2)
+    # #-- Filter matches using the Lowe's ratio test
+    # good_matches = []
+    # for m,n in knn_matches:
+    #     if m.distance < distanceThreshold * n.distance:
+    #         good_matches.append(m)
+    # logging.debug(f'There are {len(good_matches)} matches points ')
+
+    # bf = cv.BFMatcher()
+    matcher = cv.DescriptorMatcher_create(cv.DescriptorMatcher_FLANNBASED)
+    knn_matches = []
+    if descriptors_obj is not None and descriptors_scene is not None:
+        knn_matches = matcher.match(descriptors_obj, descriptors_scene)
+    good_matches = []
+    for match in knn_matches:
+        if match.distance < 150:
+            good_matches.append(match)
+
+    if len(good_matches) <= 4:
+        logging.debug(f'matches points are not enough {len(good_matches)}')
+        return None
+
+    #-- Localize the object
+    obj = np.empty((len(good_matches),2), dtype=np.float32)
+    scene = np.empty((len(good_matches),2), dtype=np.float32)
+    for i in range(len(good_matches)):
+        #-- Get the keypoints from the good matches
+        obj[i,0] = keypoints_obj[good_matches[i].queryIdx].pt[0]
+        obj[i,1] = keypoints_obj[good_matches[i].queryIdx].pt[1]
+        scene[i,0] = keypoints_scene[good_matches[i].trainIdx].pt[0]
+        scene[i,1] = keypoints_scene[good_matches[i].trainIdx].pt[1]
+    H, _ =  cv.findHomography(obj, scene, cv.RANSAC)
+    if H is None:
+        logging.debug(f'H is None')
+        return None
+
+    #-- Get the corners from the image_1 ( the object to be "detected" )
+    # obj_corners stores 4 corner points of obj, thus shape = (4, 1, 2)
+    obj_corners = np.empty((4,1,2), dtype=np.float32)
+    obj_corners[0,0,0] = 0
+    obj_corners[0,0,1] = 0
+    obj_corners[1,0,0] = img_object.shape[1]
+    obj_corners[1,0,1] = 0
+    obj_corners[2,0,0] = img_object.shape[1]
+    obj_corners[2,0,1] = img_object.shape[0]
+    obj_corners[3,0,0] = 0
+    obj_corners[3,0,1] = img_object.shape[0]
+    scene_corners = cv.perspectiveTransform(obj_corners, H)
+    if showImg:
+        #-- Draw matches
+        img_matches = cv.drawMatches(img_object, keypoints_obj, img_scene, keypoints_scene, good_matches, None, flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+        #-- Draw lines between the corners (the mapped object in the scene - image_2 )
+        cv.polylines(img_matches, 
+                    np.array([scene_corners.squeeze() + [img_object.shape[1], 0]], np.int32), 
+                    True, 
+                    (255,0,0), 10)
+        tool.imshow(img_matches)
+        plt.show()
+    return scene_corners
+
 
 def get_center_point(xy):
     center = [sum(t) // 2 for t in zip(xy[0], xy[1])]
@@ -132,9 +260,9 @@ def capture_screenshot():
     # source = cv.imread('screenshot.png')
     source = np.array(img.convert('RGB'))[..., -1::-1]
     # sample rate 1%
-    if base_point is not None and random.random() < 0.001:
+    if base_point is not None and random.random() < SCREEN_SAMPLE_RATE:
         imgName = 'collectImgs/img_{}.png'.format(time.strftime("%Y_%m_%d_%H_%M_%S"))
-        img = source[base_point[1]:(base_point[1] + 1450), base_point[0]:(base_point[0] + 900)]
+        img = source[base_point[1]:(base_point[1] + APP_PIXEL_HEIGHT), base_point[0]:(base_point[0] + APP_PIXEL_WIDTH)]
         logging.debug("Img {} saved".format(imgName))
         plt.imsave(imgName, img[..., -1::-1])
     return source
@@ -191,9 +319,9 @@ class Operation:
         pymouse.PyMouse().click(*xy, 1)
 
     def slide(self, xy_start, xy_stop):
-        pymouse.PyMouse().press(*map(sum, zip(xy_start, base_point)))
-        pyautogui.moveTo(*map(sum, zip(xy_stop, base_point)), 0.3)
-        pymouse.PyMouse().release(*map(sum, zip(xy_stop, base_point)))
+        adjusted_basepoints = [base_point[0]/2, base_point[1]/2]
+        pymouse.PyMouse().move(*map(sum, zip(xy_start, adjusted_basepoints)))
+        pyautogui.dragTo(*map(sum, zip(xy_stop, adjusted_basepoints)), button='left', duration=1, tween=pyautogui.easeInCubic) 
 
     def check_point(self, point):
         if point == None:
@@ -205,7 +333,6 @@ class Operation:
         if self.act_name == self.CLICK:
             self.check_point(self.cv_res[0])
             self.click(self.cv_res[0])
-
         elif self.act_name == self.SLIDE:
             if self.cv_res[0] == None and self.cv_res[1] == None:
                 self.check_point(None)

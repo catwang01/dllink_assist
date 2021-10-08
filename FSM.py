@@ -6,6 +6,7 @@ import time
 import mystatus
 from mystatus import Status
 from log.log import setupLogging
+from const import MIN_REFRESH_INTERVAL
 
 setupLogging()
 
@@ -13,11 +14,11 @@ class FSM:
 
     statusList =  []
     refreshScreenTime = -1
-    minRefreshInterval = 1
+    minRefreshInterval = MIN_REFRESH_INTERVAL
     name = 'FSM'
 
     def showScreen(self):
-        tool.showImg(tool.get_appshot())
+        tool.imshow(tool.get_appshot())
 
     def refreshScreen(self):
         """
@@ -25,37 +26,15 @@ class FSM:
         """
         now = time.time()
         interval = now - max(mystatus.lastClickTime, self.refreshScreenTime)
-        logging.debug("laskClickTime: {}, self.refreshScreenTime: {} now: {}".format(mystatus.lastClickTime, self.refreshScreenTime, now))
         if interval < self.minRefreshInterval:
-                sleepTime = np.ceil(self.minRefreshInterval - interval)
-                logging.info("Refresh screen too frequently! Sleep for {}s".format(sleepTime))
+                sleepTime = np.round(self.minRefreshInterval - interval, 3)
+                logging.info(f"Refresh screen too frequently! Sleep for {sleepTime}s")
                 time.sleep(sleepTime)
                 self.refreshScreen()
         else:
                 self.refreshScreenTime = time.time()
                 tool.capture_screenshot()
-                logging.debug("The screen has been refreshed! refreshScreenTime: {}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(self.refreshScreenTime))))
-
-    def showScreen(self):
-        tool.showImg(tool.get_appshot())
-
-    def refreshScreen(self):
-        """
-        Control refresh frequency
-        """
-
-        now = time.time()
-        interval = now - max(mystatus.lastClickTime, self.refreshScreenTime)
-        logging.debug("laskClickTime: {}, self.refreshScreenTime: {} now: {}".format(mystatus.lastClickTime, self.refreshScreenTime, now))
-        if interval < self.minRefreshInterval:
-            sleepTime = np.ceil(self.minRefreshInterval - interval)
-            logging.info("Refresh screen too frequently! Sleep for {}s".format(sleepTime))
-            time.sleep(sleepTime)
-            self.refreshScreen()
-        else:
-            self.refreshScreenTime = time.time()
-            tool.capture_screenshot()
-            logging.debug("The screen has been refreshed! refreshScreenTime: {}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(self.refreshScreenTime))))
+                logging.debug(f"The screen has been refreshed! refreshScreenTime: {tool.formatTime(self.refreshScreenTime)}")
 
     def getCurrentStatus(self, refresh=True) -> Optional[Status]:
         if refresh:
@@ -72,10 +51,10 @@ class FSM:
     def beforeRun(self):
         self.nUnexpectedStatus = 0
         self.unexpectedStatus = None
-        logging.debug(f"entering {self.name}")
+        logging.debug(f"entering FSM {self.name}")
 
     def afterRun(self):
-        logging.debug(f"leaving {self.name}")
+        logging.debug(f"leaving FSM {self.name}")
 
     def handleUnexpectedStatus(self, curStatus):
         if self.nUnexpectedStatus == 20:

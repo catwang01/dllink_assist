@@ -1,6 +1,9 @@
-import pytest
+import sys
+import os
+thisFile = __file__
+sys.path.append(os.path.dirname(os.path.dirname(thisFile)))
 from mystatus import Status
-from mystatus import homePageMonsterGateNonSelected, homePageMonsterGateSelected, homePagePvpNonSelected, homePagePvpSelected, homePageStoreNonSelected, homePageStoreSelected, homePageTransportGateNonSelected, homePageTransportGateSelected, homePageWorkshopSelected, homePageWorkshopNonSelected
+from homepage.status import homePageMonsterGateNonSelected, homePageMonsterGateSelected, homePagePvpNonSelected, homePagePvpSelected, homePageStoreNonSelected, homePageStoreSelected, homePageTransportGateNonSelected, homePageTransportGateSelected, homePageWorkshopSelected, homePageWorkshopNonSelected
 
 
 class TestStatus:

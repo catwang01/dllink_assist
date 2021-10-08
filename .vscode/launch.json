@@ -20,6 +20,18 @@
                         "request": "launch",
                         "program": "${file}",
                         "console": "integratedTerminal"
+                },
+
+                {
+                        "name": "UnpackUnityAssets.py",
+                        "type": "python",
+                        "request": "launch",
+                        "program": "UnpackUnityAssets.py",
+                        "console": "integratedTerminal",
+                        "args": ["-i" 
+                                , "/Users/ed/Documents/MuMu共享文件夹/files/00/00a1bde4"
+                                , "-o"
+                                , "test"]
                 }
         ]
 }
