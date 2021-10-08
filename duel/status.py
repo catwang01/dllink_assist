@@ -46,12 +46,7 @@ duelFinishedPage = FinishedStatus(
         condition='recordButton & yes'
 )
 
-class DuelResultsPage(Status):
-
-        def isLoaded(self):
-                return self.iconDict['next'].exists() or self.iconDict['yes'].exists()
-
-duelResultsPage = DuelResultsPage(
+duelResultsPage = Status(
         name="duelResultsPage",
         iconDict={
                 "next": generalNextButton,
@@ -60,7 +55,8 @@ duelResultsPage = DuelResultsPage(
         },
         transferDict={
                 'next': lambda status: generalNextButton.click(),
-                'randomClick': lambda status:duelResultsPageTitle.click()
+                'randomClick': lambda status:duelResultsPageTitle.click(),
+                'yes': lambda status: generalYesButton.click()
         },
         condition="title",
         level=199,

@@ -298,7 +298,11 @@ class ManualDuelFSM(FSM):
 class AutoDuelFSM(FSM):
 
     name = "AutoDuelFSM"
-    statusList = [selectDuelMode, inDuelStatus]
+    statusList = [
+        selectDuelMode, 
+        inDuelStatus,
+        duelFinishedPage
+    ]
     statusList.sort(key=lambda status: status.level, reverse=True)
 
     def __init__(self) -> None:
@@ -356,12 +360,12 @@ class DuelFSM(FSM):
                 self.isWin = curStatus.isWin()
                 curStatus.transfer("yes")
             elif curStatus == duelResultsPage:
-                if curStatus.isLoaded():
+                if curStatus.hasButton('next'):
                     curStatus.transfer("next")
+                elif curStatus.hasButton('yes'):
+                    curStatus.transfer('yes')
                 else:
                     curStatus.transfer("randomClick")
-            elif curStatus == getSaiStatus:
-                curStatus.transfer("yes")
             elif curStatus in generalStatusList:
                 curStatus.transfer("default")
             elif curStatus == loginPage:
