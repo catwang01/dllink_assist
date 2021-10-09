@@ -48,7 +48,8 @@ class CollectKeyFSM(FSM):
             elif curStatus in generalStatusList:
                 curStatus.transfer('default')
             else:
-                break
+                if self.handleUnexpectedStatus(curStatus):
+                    break
         self.afterRun()
         return nCollected
 
@@ -119,6 +120,7 @@ class HomePageFSM(FSM):
                 startTime = time.time()
                 nTotalCollected = 0
                 while len(channels):
+                    curStatus = self.getCurrentStatus()
                     if curStatus == homePage:
                         channel = random.choice(channels)
                         logging.debug("goto {}".format(channel))
