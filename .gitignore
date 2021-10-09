@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 collectImgs
 dataMined
+.DS_Store

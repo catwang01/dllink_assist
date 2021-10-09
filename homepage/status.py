@@ -1,6 +1,9 @@
 from mystatus import Status
 from homepage.icons import *
 from general.icons import generalYesButton
+from tool import Operation, get_appshot
+from role import RoleCollection
+from const import ROLE_DICT_FILE
 
 class HomePage(Status):
 
@@ -22,8 +25,12 @@ class HomePage(Status):
         def countNormalNpcs(self):
                 return self.iconDict['normalNpcs'].count()
         
-        def getCurrentWorld(self):
-                pass
+        def getCurrentWorld(self, img=None):
+                roleCollection = RoleCollection(ROLE_DICT_FILE)
+                for name, role in roleCollection.roleDict.items():
+                        if Icon(role.homePageImgPath, background=img).exists():
+                                return role.world
+                return 'DM'
 
 homePage = HomePage(
         name='homePage',
@@ -57,7 +64,8 @@ homePage = HomePage(
                 'clickOneNormalNpc': lambda status:normalNpcIcons.clickFirst(),
                 'switchWorld': lambda status:switchWorldButton.click(),
                 'gotoSaiHomePage': lambda status: saiEnterButton.click(),
-                'enterUionForce': lambda status: unionForceIcon.click()
+                'enterUionForce': lambda status: unionForceIcon.click(),
+                'click': lambda status, point: Operation().click(point)
         },
         condition='pvpSelected | transportGateSelected | workshopSelected | storeSelected | monsterGateSelected'
 )

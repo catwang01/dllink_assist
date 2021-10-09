@@ -44,9 +44,12 @@ class Icon:
                         return tool.get_appshot()
                 else:
                         return self._background
+
         @background.setter
         def background(self, background):
                 if background is not None:
+                        if isinstance(background, str):
+                                background = cv2.imread(background)
                         self._background = background.copy()
 
         @property

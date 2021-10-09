@@ -1,0 +1,5 @@
+JadenYuki,img/roles/JadenYukiHomePage.png,,GX,游城十代
+AsterPhoenix,img/roles/AsterPhoenixHomePage.png,,GX,爱德菲尼克斯
+ChazzPrinceton,img/roles/ChazzPrincetonHomePage.png,,GX,万丈目
+JesseAnderson,img/roles/JesseAndersonHomePage.png,,GX,约翰
+AlexisRhodes,img/roles/AlexisRhodesHomePage.png,,GX,天上院明日香

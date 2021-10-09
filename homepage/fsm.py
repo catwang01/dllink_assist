@@ -51,6 +51,48 @@ class CollectKeysInCurrentChannel(FSM):
         self.afterRun()
         return nCollected
 
+class CollectHiddentItemFSM(FSM):
+
+    name = 'CollectHiddentItemFSM'
+    statusList = [homePage] + generalStatusList
+
+    def run(self):
+        self.beforeRun()
+        pointDict = {
+            'DM': {
+            'monsterGate': [41, 300],
+            'transportGate': [225, 326],
+            'workshop': [138, 540],
+            'store': [225, 275],
+            'pvp': [66, 430]
+        }, 'GX': {
+            'monsterGate': [41, 300],
+            'transportGate': [225, 326],
+            'workshop': [130, 558],
+            'store': [225, 275],
+            'pvp': [144, 423] 
+        }
+        } 
+        clicked = False
+        while True:
+            curStatus = self.getCurrentStatus()
+            if curStatus == homePage:
+                if not clicked:
+                    channel = homePage.inWhichChannel()
+                    world = homePage.getCurrentWorld()
+                    homePage.transfer('click', 2, args=(pointDict[world][channel],))
+                    clicked = True
+                else:
+                    break
+            elif curStatus in generalStatusList:
+                curStatus.transfer('default')
+            else:
+                if self.handleUnexpectedStatus(curStatus):
+                    break
+        self.afterRun()
+        return
+
+
 class TranserAllChannels(FSM):
 
     name = 'TranserAllChannels'
@@ -72,6 +114,8 @@ class TranserAllChannels(FSM):
                         ret = fsm.run(*args, **kwargs)
                         channels.remove(channel)
                         yield channel, ret
+                    elif curStatus in generalStatusList:
+                        curStatus.transfer('default')
                 break
             elif curStatus in generalStatusList:
                 curStatus.transfer('default')
@@ -177,15 +221,19 @@ class HomepageEnterUnionForce(FSM):
 
     def run(self):
         self.beforeRun()
+        canContinue = True
         while True:
             curStatus = self.getCurrentStatus()
             if curStatus == homePage:
-                if curStatus.hasButton('unionForceIcon'):
-                    curStatus.transfer('enterUionForce')
+                if canContinue:
+                    if curStatus.hasButton('unionForceIcon'):
+                        curStatus.transfer('enterUionForce')
+                    else:
+                        SwitchChannelFSM().run('pvp')
                 else:
-                    SwitchChannelFSM().run('pvp')
+                    break
             elif curStatus == unionForcePage:
-                UnionForceFSM().run()
+                canContinue = UnionForceFSM().run()
             else:
                 if self.handleUnexpectedStatus(curStatus):
                     break
@@ -217,12 +265,12 @@ class HomePageFSM(FSM):
         while True:
             curStatus = self.getCurrentStatus()
             if curStatus == homePage:
-                curStatus.transfer("switchWorld", 1)
+                curStatus.transfer("switchWorld")
             elif curStatus == switchingWorldStatus:
                 if targetWorld is None or targetWorld == "DMWorld":
-                    curStatus.transfer('switchToDMWorld', 5)
+                    curStatus.transfer('switchToDMWorld', 3)
                 else:
-                    curStatus.transfer('switchToGXWorld', 5)
+                    curStatus.transfer('switchToGXWorld', 3)
                 logging.debug("Goto world: {}".format(targetWorld))
                 break
             else:
@@ -293,18 +341,25 @@ class HomePageFSM(FSM):
         for ret, channel in results:
             pass
 
+    def collectHiddenItems(self):
+        results = TranserAllChannels().run(CollectHiddentItemFSM())
+        for ret, channel in results:
+            pass
+
     def unionForceChallenge(self):
         HomepageEnterUnionForce().run()
 
     def run(self):
         for world in ['DMWorld', 'GXWorld']:
             self.changeWorld(world)
-            tool.sleep(3)
-            self.collectKeys()
-            tool.sleep(3)
-            self.duelWithNormalNpcs()
-            tool.sleep(3)
-            self.unionForceChallenge()
+            # tool.sleep(3)
+            # self.collectKeys()
+            # tool.sleep(3)
+            # self.duelWithNormalNpcs()
+            # tool.sleep(3)
+            # self.unionForceChallenge()
+            # tool.sleep(3)
+            self.collectHiddenItems()
             # self.runSai()
             # tool.sleep(3)
         # for i in range(5):
