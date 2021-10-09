@@ -11,6 +11,8 @@ from login.fsm import LoginFSM
 from homepage.status import *
 from activity.sai.status import saiHomePage
 from activity.sai.fsm import SaiFSM
+from unionForce.fsm import UnionForceFSM
+from unionForce.status import unionForcePage
 from tool import capitalize
 from transportGateDuel.fsm import TransportGateFSM
 from transportGateDuel.status import transportGateHomePage
@@ -168,6 +170,28 @@ class SwitchChannelFSM(FSM):
         self.afterRun()
         return
 
+class HomepageEnterUnionForce(FSM):
+
+    name = 'HomepageEnterUnionForce'
+    statusList = [homePage, unionForcePage]
+
+    def run(self):
+        self.beforeRun()
+        while True:
+            curStatus = self.getCurrentStatus()
+            if curStatus == homePage:
+                if curStatus.hasButton('unionForceIcon'):
+                    curStatus.transfer('enterUionForce')
+                else:
+                    SwitchChannelFSM().run('pvp')
+            elif curStatus == unionForcePage:
+                UnionForceFSM().run()
+            else:
+                if self.handleUnexpectedStatus(curStatus):
+                    break
+        self.afterRun()
+        return 
+
 class HomePageFSM(FSM):
 
     name = 'HomePageFSM'
@@ -269,14 +293,18 @@ class HomePageFSM(FSM):
         for ret, channel in results:
             pass
 
+    def unionForceChallenge(self):
+        HomepageEnterUnionForce().run()
+
     def run(self):
         for world in ['DMWorld', 'GXWorld']:
-            self.changeWorld(world)
-            tool.sleep(3)
-            self.collectKeys()
-            tool.sleep(3)
-            self.duelWithNormalNpcs()
-            tool.sleep(3)
+            self.unionForceChallenge()
+            # self.changeWorld(world)
+            # tool.sleep(3)
+            # self.collectKeys()
+            # tool.sleep(3)
+            # self.duelWithNormalNpcs()
+            # tool.sleep(3)
             # self.runSai()
             # tool.sleep(3)
         # for i in range(5):

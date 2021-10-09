@@ -41,7 +41,8 @@ homePage = HomePage(
                 'keys': keysIcon,
                 'normalNpcs': normalNpcIcons,
                 'switchWorldButton': switchWorldButton,
-                'saiEnterButton': saiEnterButton
+                'saiEnterButton': saiEnterButton,
+                'unionForceIcon': unionForceIcon
 
         },
         transferDict={
@@ -55,7 +56,8 @@ homePage = HomePage(
                 'collectAllKeys': lambda status:keysIcon.clickAll(),
                 'clickOneNormalNpc': lambda status:normalNpcIcons.clickFirst(),
                 'switchWorld': lambda status:switchWorldButton.click(),
-                'gotoSaiHomePage': lambda status: saiEnterButton.click()
+                'gotoSaiHomePage': lambda status: saiEnterButton.click(),
+                'enterUionForce': lambda status: unionForceIcon.click()
         },
         condition='pvpSelected | transportGateSelected | workshopSelected | storeSelected | monsterGateSelected'
 )

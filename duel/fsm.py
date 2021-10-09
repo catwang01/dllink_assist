@@ -13,6 +13,7 @@ from homepage.status import homePage
 from transportGateDuel.status import transportGateHomePage
 from card import CardCollection
 from battleField import BattleField, Direction
+from unionForce.status import unionForcePage
 
 class BattleFSM(FSM):
 
@@ -340,7 +341,8 @@ class DuelFSM(FSM):
         inDuelStatus,
         inDiagLog,
         transportGateHomePage,
-        homePage
+        homePage,
+        unionForcePage
     ] + generalStatusList
 
     name = 'DuelFSM'
@@ -370,7 +372,7 @@ class DuelFSM(FSM):
                 curStatus.transfer("default")
             elif curStatus == loginPage:
                 LoginFSM().run()
-            elif curStatus in {transportGateHomePage, homePage, inDiagLog}:
+            elif curStatus in {transportGateHomePage, homePage, inDiagLog, unionForcePage}:
                 break
             else:
                 if self.handleUnexpectedStatus(curStatus):

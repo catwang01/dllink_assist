@@ -2,6 +2,7 @@ from icons import Icon, MultiIcon, CoordinateIcon, Yolov5Icon
 import glob
 
 
+imgDirPath = 'img/home'
 # keysIcon = MultiIcon(glob.glob('img/base/key*.png'))
 modelPath = '/Users/ed/Git/yolov5/runs/train/exp38/weights/best.pt'
 classes = [ 'tv', 'seller', 'unionForce' , 'pvp' , 'key' , 'normalNpc' ]
@@ -32,3 +33,5 @@ switchWorldButton = CoordinateIcon(position=[(20, 210), (40, 230)])
 
 DMWorldIcon = MultiIcon(['img/DMWorldIcon_load.png', 'img/DMWorldIcon_nonload.png', 'img/DMWorldIcon_nonload2.png'])
 GXWorldIcon = MultiIcon(['img/GXWorldIcon_load.png', 'img/GXWorldIcon_nonload.png'])
+
+unionForceIcon = Icon(f'{imgDirPath}/unionForceIcon.png')
