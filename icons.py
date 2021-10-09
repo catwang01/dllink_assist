@@ -114,7 +114,7 @@ class MultiIcon(Icon):
 
 class CoordinateIcon(Icon):
 
-        def __init__(self, position=None, name=None, clickStepTime=0.5) -> None:
+        def __init__(self, position=None, name=None, background=None, clickStepTime=0.5) -> None:
                 self.path = None
                 self.name = name
 
@@ -143,13 +143,12 @@ class CoordinateIcon(Icon):
         def exists(self) -> bool:
             return True
 
-        def showImg(self, background=None):
+        def getImg(self):
                 x, y = self._position
-                if background is None:
-                        background = tool.get_appshot()
-                background = background[x[1]:y[1], x[0]:y[0]]
-                tool.imshow(background)
-                return background
+                return self.background[x[1]:y[1], x[0]:y[0]]
+
+        def showImg(self):
+                tool.imshow(self.getImg())
 
 class Yolov5Icon(MultiIcon):
         def __init__(self, path, name=None, class_=None, classes=None, check=True) -> None:

@@ -106,7 +106,8 @@ class BattleField:
             icon = CoordinateIcon([(58, 129), (105, 197)])
         else:
             raise Exception(f"No such item in {Direction}")
-        img = icon.showImg(self.background)
+        icon.background = self.background
+        img = icon.getImg()
         numbers = extractNumber(img, getTemplateImages(None), showImg=False)
         if numbers == '':
             return 0
