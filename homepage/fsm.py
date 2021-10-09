@@ -298,13 +298,13 @@ class HomePageFSM(FSM):
 
     def run(self):
         for world in ['DMWorld', 'GXWorld']:
+            self.changeWorld(world)
+            tool.sleep(3)
+            self.collectKeys()
+            tool.sleep(3)
+            self.duelWithNormalNpcs()
+            tool.sleep(3)
             self.unionForceChallenge()
-            # self.changeWorld(world)
-            # tool.sleep(3)
-            # self.collectKeys()
-            # tool.sleep(3)
-            # self.duelWithNormalNpcs()
-            # tool.sleep(3)
             # self.runSai()
             # tool.sleep(3)
         # for i in range(5):

@@ -1,11 +1,12 @@
 from icons import Icon, MultiIcon, CoordinateIcon, Yolov5Icon
+from const import YOLOV5_MODEL_PATH, YOLOV5_MODEL_CLASSES
 import glob
 
 
 imgDirPath = 'img/home'
 # keysIcon = MultiIcon(glob.glob('img/base/key*.png'))
-modelPath = '/Users/ed/Git/yolov5/runs/train/exp38/weights/best.pt'
-classes = [ 'tv', 'seller', 'unionForce' , 'pvp' , 'key' , 'normalNpc' ]
+modelPath = YOLOV5_MODEL_PATH
+classes = YOLOV5_MODEL_CLASSES
 # keysIcon = Yolov5Icon(modelPath, name='keysIcon', class_ = 'key', classes=classes)
 keysIcon = MultiIcon(glob.glob('img/base/key*.png'))
 

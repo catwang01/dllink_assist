@@ -10,3 +10,6 @@ APP_PIXEL_WIDTH, APP_PIXEL_HEIGHT = int(APP_WIDTH * SCALER), int(APP_HEIGHT * SC
 MIN_REFRESH_INTERVAL = 0.2
 
 SCREEN_SAMPLE_RATE = 1
+
+YOLOV5_MODEL_PATH = '/Users/ed/Git/yolov5/runs/train/exp38/weights/best.pt'
+YOLOV5_MODEL_CLASSES = [ 'tv', 'seller', 'unionForce' , 'pvp' , 'key' , 'normalNpc' ]
