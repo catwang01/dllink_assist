@@ -256,12 +256,13 @@ def get_right_upper_point(xy):
 def capture_screenshot():
     global source
     img = pyautogui.screenshot()  # x,y,w,h
-    # img.save('screenshot.png')
-    # source = cv.imread('screenshot.png')
     source = np.array(img.convert('RGB'))[..., -1::-1]
     # sample rate 1%
     if base_point is not None and random.random() < SCREEN_SAMPLE_RATE:
-        imgName = 'collectImgs/img_{}.png'.format(time.strftime("%Y_%m_%d_%H_%M_%S"))
+        imgDirPath = 'collectImgs'
+        if not os.path.exists(imgDirPath):
+            os.makedirs(imgDirPath)
+        imgName = os.path.join(imgDirPath, 'img_{}.png'.format(time.strftime("%Y_%m_%d_%H_%M_%S")))
         img = source[base_point[1]:(base_point[1] + APP_PIXEL_HEIGHT), base_point[0]:(base_point[0] + APP_PIXEL_WIDTH)]
         logging.debug("Img {} saved".format(imgName))
         plt.imsave(imgName, img[..., -1::-1])
