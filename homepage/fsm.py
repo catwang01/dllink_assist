@@ -23,14 +23,10 @@ from log.log import setupLogging
 
 setupLogging()
 
-class CollectKeyFSM(FSM):
+class CollectKeysInCurrentChannel(FSM):
 
-    statusList = [
-        homePage
-    ] + generalStatusList
-    statusList.sort(key=lambda status: status.level, reverse=True)
-
-    name = "CollectKeyFSM"
+    name = 'CollectKeysInOneChannel'
+    statusList = [homePage] + generalStatusList
 
     def run(self):
         self.beforeRun()
@@ -53,8 +49,128 @@ class CollectKeyFSM(FSM):
         self.afterRun()
         return nCollected
 
+class TranserAllChannels(FSM):
+
+    name = 'TranserAllChannels'
+    statusList = [
+        homePage
+    ] + generalStatusList
+
+    def run(self, fsm, *args, **kwargs):
+        self.beforeRun()
+        while True:
+            curStatus = self.getCurrentStatus()
+            if curStatus == homePage:
+                channels = ['pvp', 'transportGate', 'store', 'workshop', 'monsterGate']
+                while len(channels):
+                    curStatus = self.getCurrentStatus()
+                    if curStatus == homePage:
+                        channel = random.choice(channels)
+                        SwitchChannelFSM().run(channel)
+                        ret = fsm.run(*args, **kwargs)
+                        channels.remove(channel)
+                        yield channel, ret
+                break
+            elif curStatus in generalStatusList:
+                curStatus.transfer('default')
+            else:
+                if self.handleUnexpectedStatus(curStatus):
+                    break
+        self.afterRun()
+        return
+
+
+class DuelWithAllNpcInCurrentChannel(FSM):
+
+    name = 'DuelWithAllNpcInCurrentChannel'
+    statusList = [homePage, inDiagLog]
+
+    def run(self):
+        self.beforeRun()
+        nNormalNpcs = 0
+        while True:
+            curStatus = self.getCurrentStatus()
+            if curStatus == homePage:
+                if curStatus.countNormalNpcs():
+                    curStatus.transfer('clickOneNormalNpc', 2)
+                else:
+                    break
+            elif curStatus == inDiagLog:
+                DuelWithOneNormalNPC().run()
+                nNormalNpcs += 1
+            else:
+                if self.handleUnexpectedStatus(curStatus):
+                    break
+        self.afterRun()
+        return nNormalNpcs
+
+
+class DuelWithOneNormalNPC(FSM):
+
+    name = 'DuelWithOneNormalNPC'
+    statusList = [
+        inDiagLog,
+        selectDuelMode,
+        loginPage,
+        homePage
+    ] + generalStatusList
+
+    def run(self):
+        self.beforeRun()
+        nDiagLog = 0
+        isWin = None
+        while True:
+            curStatus = self.getCurrentStatus()
+            if curStatus == homePage:
+                if nDiagLog >= 2:
+                    print(f"Duel finished! Result: {'Won' if isWin else 'Lost'}")
+                else:
+                    print('Homepage! Not Duel screen! Returned!')
+                break
+            elif curStatus == inDiagLog:
+                curStatus.transfer('next', 5)
+                nDiagLog += 1
+            elif curStatus == selectDuelMode:
+                DuelFSM().run()
+            elif curStatus in generalStatusList:
+                curStatus.transfer("default")
+            elif curStatus == loginPage:
+                LoginFSM().run()
+            else:
+                if self.handleUnexpectedStatus(curStatus):
+                    break
+        self.afterRun()
+        return
+
+class SwitchChannelFSM(FSM):
+
+    name = 'SwitchChannelFSM'
+    statusList = [
+        homePage
+    ]
+
+    def run(self, channel):
+        self.beforeRun()
+        logging.debug("goto {}".format(channel))
+        while True:
+            curStatus = self.getCurrentStatus()
+            if curStatus == homePage:
+                currentChannel = curStatus.inWhichChannel()
+                logging.debug("current: {} goto: {}".format(currentChannel, channel))
+                if  currentChannel != channel:
+                    curStatus.transfer('select{}'.format(capitalize(channel)), 5)
+                else:
+                    logging.debug("Staying current channel")
+                    break
+            else:
+                if self.handleUnexpectedStatus(curStatus):
+                    break
+        self.afterRun()
+        return
+
 class HomePageFSM(FSM):
 
+    name = 'HomePageFSM'
     statusList = [
         homePage,
         inDiagLog,
@@ -66,7 +182,6 @@ class HomePageFSM(FSM):
         saiHomePage,
         transportGateHomePage
     ] + generalStatusList
-    statusList.sort(key=lambda x: x.level, reverse=True)
 
     def initRun(self):
         self.unexpectedStatus = None
@@ -108,131 +223,6 @@ class HomePageFSM(FSM):
         logging.debug('leaving runSai!')
         return
 
-    def collectKeys(self):
-        self.initRun()
-        logging.debug("entering collectKeys")
-        while True:
-            curStatus = self.getCurrentStatus()
-            if curStatus == homePage:
-                channels = ['pvp', 'transportGate', 'store', 'workshop', 'monsterGate']
-                nChannels = len(channels)
-                logging.info("Collecting keys...")
-                startTime = time.time()
-                nTotalCollected = 0
-                while len(channels):
-                    curStatus = self.getCurrentStatus()
-                    if curStatus == homePage:
-                        channel = random.choice(channels)
-                        logging.debug("goto {}".format(channel))
-                        currentChannel = curStatus.inWhichChannel()
-                        nCollected = CollectKeyFSM().run()
-                        logging.debug("current: {} goto: {}".format(currentChannel, channel))
-                        if  currentChannel != channel:
-                            curStatus.transfer('select{}'.format(capitalize(channel)))
-                        else:
-                            logging.debug("Staying current channel")
-                        logging.info(f"Collecting keys in channel {channel}")
-
-                        logging.info(f"Collected {nCollected} keys in current channel: {channel}")
-                        channels.remove(channel)
-                        logging.info(f"Total channels: {nChannels} Collected: {nChannels - len(channels)} Left: {len(channels)}")
-                        nTotalCollected += nCollected 
-                    else:
-                        break
-                endTime = time.time()
-                logging.info("Collecting finished! TimeUsed: {}s Total collected keys: {}".format(int(endTime - startTime), nTotalCollected))
-                break
-            elif curStatus in generalStatusList:
-                curStatus.transfer('default')
-            else:
-                if self.handleUnexpectedStatus(curStatus):
-                    break
-        logging.debug("leaving collectKeys")
-        return
-
-    def duelWithOneNormalNpc(self):
-        self.initRun()
-        logging.debug('entering duelWithOneNormalNpc')
-        nDiagLog = 0
-        isWin = None
-        while True:
-            curStatus = self.getCurrentStatus()
-            if curStatus == inDiagLog:
-                curStatus.transfer('next', 5)
-                nDiagLog += 1
-            elif curStatus == selectDuelMode:
-                DuelFSM().run()
-            elif curStatus in generalStatusList:
-                curStatus.transfer("default")
-            elif curStatus == loginPage:
-                LoginFSM().run()
-            elif curStatus == homePage:
-                if nDiagLog >= 2:
-                    print(f"Duel finished! Result: {'Won' if isWin else 'Lost'}")
-                else:
-                    print('Homepage! Not Duel screen! Returned!')
-                break
-            else:
-                if self.handleUnexpectedStatus(curStatus):
-                    break
-        logging.debug('leaving duelWithOneNormalNpc')
-        return
-
-
-    def duelWithNormalNpcs(self):
-        self.initRun()
-        logging.debug("entering duelWithNormalNpcs")
-        while True:
-            curStatus = self.getCurrentStatus()
-            if curStatus == homePage:
-                channels = ['pvp', 'transportGate', 'store', 'workshop', 'monsterGate']
-                nChannels = len(channels)
-                logging.info("Searching normal npcs...")
-                startTime = time.time()
-                nTotalSearched = 0
-                while len(channels):
-                    channel = random.choice(channels)
-                    nSearched = 0
-                    logging.debug("goto {}".format(channel))
-                    currentChannel = curStatus.inWhichChannel()
-                    logging.debug("current: {} goto: {}".format(currentChannel, channel))
-                    if  currentChannel != channel:
-                        curStatus.transfer('select{}'.format(capitalize(channel)), 5)
-                    else:
-                        logging.debug("Staying current channel")
-                    logging.info("Searching normal npcs in {}".format(channel))
-                    while True:
-                        curStatus = self.getCurrentStatus()
-                        if curStatus == homePage:
-                            nNpcs = curStatus.countNormalNpcs()
-                            if nNpcs > 0:
-                                logging.info("Find {} normal npcs in current channel".format(nNpcs))
-                                curStatus.transfer('clickOneNormalNpc')
-                                self.duelWithOneNormalNpc()
-                                nSearched += 1
-                            else:
-                                logging.info("Find no normal npcs in current channel!".format(nNpcs))
-                                break
-                        elif curStatus == inDiagLog:
-                            curStatus.transfer('next')
-                        elif curStatus in generalStatusList:
-                            curStatus.transfer('default')
-                        else:
-                            return 
-                    logging.info("Searched {} normal npcs in current channel: {}".format(nSearched, channel))
-                    channels.remove(channel)
-                    logging.info("Total channels: {} Searched: {} Left: {}".format(nChannels, nChannels - len(channels), len(channels)))
-                    nTotalSearched += nSearched 
-                endTime = time.time()
-                logging.info("Searching finished! TimeUsed: {}s Total search normal npcs: {}".format(int(endTime - startTime), nTotalSearched))
-                break
-            else:
-                if self.handleUnexpectedStatus(curStatus):
-                    break
-        logging.debug("leaving duelWithNormalNpcs")
-        return
-
-
     def runMaze(self):
         self.initRun()
         logging.debug("entering runMaze")
@@ -268,6 +258,16 @@ class HomePageFSM(FSM):
                     break
         logging.debug('leaving transportGateDuel!')
         return
+
+    def collectKeys(self):
+        results = TranserAllChannels().run(CollectKeysInCurrentChannel())
+        for ret, channel in results:
+            pass
+
+    def duelWithNormalNpcs(self):
+        results = TranserAllChannels().run(DuelWithAllNpcInCurrentChannel())
+        for ret, channel in results:
+            pass
 
     def run(self):
         for world in ['DMWorld', 'GXWorld']:

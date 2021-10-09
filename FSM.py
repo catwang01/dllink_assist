@@ -10,7 +10,11 @@ from const import MIN_REFRESH_INTERVAL
 
 setupLogging()
 
-class FSM:
+class FsmMetaClass(type):
+    def __init__(cls, *args, **kwargs):
+        cls.statusList.sort(key=lambda status: status.level, reverse=True)
+    
+class FSM(metaclass=FsmMetaClass):
 
     statusList =  []
     refreshScreenTime = -1

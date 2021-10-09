@@ -18,7 +18,6 @@ class SaiFSM(FSM):
         lotteryHomePage,
         useItemHomePage
     ] + generalStatusList
-    statusList.sort(key=lambda icon: icon.level, reverse=True)
 
     name = 'SaiFSM'
 

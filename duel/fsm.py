@@ -20,7 +20,7 @@ class BattleFSM(FSM):
     statusList = [
         manualDuelStatus
     ]
-    statusList.sort(key=lambda status: status.level, reverse=True)
+    
     def run(self):
         self.beforeRun()
         while True:
@@ -49,7 +49,7 @@ class EndTurnFSM(FSM):
         manualDuelStatus,
         duelFinishedPage
     ]
-    statusList.sort(key=lambda status: status.level, reverse=True)
+    
 
     def run(self):
         self.beforeRun()
@@ -175,7 +175,7 @@ class UseFSM(FSM):
         manualDuelStatus,
         selectTargetPage
     ]
-    statusList.sort(key=lambda status: status.level, reverse=True)
+    
 
     def run(self, card, target=None):
         self.beforeRun()
@@ -264,7 +264,7 @@ class ManualDuelFSM(FSM):
         selectDuelMode,
         duelFinishedPage
     ]
-    statusList.sort(key=lambda status: status.level, reverse=True)
+    
 
     def run(self):
         self.beforeRun()
@@ -303,7 +303,7 @@ class AutoDuelFSM(FSM):
         inDuelStatus,
         duelFinishedPage
     ]
-    statusList.sort(key=lambda status: status.level, reverse=True)
+    
 
     def __init__(self) -> None:
         super().__init__()

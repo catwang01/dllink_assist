@@ -15,7 +15,6 @@ class TransportGateFSM(FSM):
         homePage,
         npcAlreadyExistsStatus
     ] + generalStatusList
-    statusList.sort(key=lambda x: x.level, reverse=True)
 
     name = 'TransportGateFSM'
 

@@ -36,7 +36,6 @@ class MazeFSM(FSM):
             selectDuelMode,
             addCardsStatus
     ] + generalStatusList
-    statusList.sort(key=lambda status: status.level, reverse=True)
 
     name = 'MazeFSM'
 
