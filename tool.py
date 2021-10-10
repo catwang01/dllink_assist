@@ -21,7 +21,8 @@ import subprocess
 import os
 import functools
 import tool
-from const import APP_HEIGHT, APP_PIXEL_HEIGHT, APP_PIXEL_WIDTH, APP_WIDTH, SCREEN_HEIGHT, SCREEN_SAMPLE_RATE
+from const import APP_SCREEN_HEIGHT, APP_HEIGHT, APP_WIDTH, APP_SCREEN_WIDTH, SCREEN_SAMPLE_RATE
+import save_image
 
 template = None
 
@@ -64,7 +65,7 @@ def getNparam(func):
     return len(inspect.signature(func).parameters)
 
 def isValidAPPPoint(point):
-    return 0 <= point[0] <= APP_PIXEL_WIDTH and 0 <= point[1] <= APP_PIXEL_HEIGHT
+    return 0 <= point[0] <= APP_WIDTH and 0 <= point[1] <= APP_HEIGHT
 
 def move(position, xy):
     x, y = xy
@@ -263,9 +264,9 @@ def capture_screenshot():
         if not os.path.exists(imgDirPath):
             os.makedirs(imgDirPath)
         imgName = os.path.join(imgDirPath, 'img_{}.png'.format(time.strftime("%Y_%m_%d_%H_%M_%S")))
-        img = source[base_point[1]:(base_point[1] + APP_PIXEL_HEIGHT), base_point[0]:(base_point[0] + APP_PIXEL_WIDTH)]
-        logging.debug("Img {} saved".format(imgName))
-        plt.imsave(imgName, img[..., -1::-1])
+        img = source[base_point[1]:(base_point[1] + APP_HEIGHT), base_point[0]:(base_point[0] + APP_WIDTH)]
+        save_image.queue.put((imgName, img))
+        logging.info(f'Add image {imgName} into queue')
     return source
 
 def get_screenshot():
