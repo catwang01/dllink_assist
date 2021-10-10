@@ -144,6 +144,8 @@ class DuelWithAllNpcInCurrentChannel(FSM):
             elif curStatus == inDiagLog:
                 DuelWithOneNormalNPC().run()
                 nNormalNpcs += 1
+            elif curStatus in generalStatusList:
+                curStatus.transfer('default')
             else:
                 if self.handleUnexpectedStatus(curStatus):
                     break
