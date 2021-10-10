@@ -15,4 +15,5 @@ SCREEN_SAMPLE_RATE = 1
 YOLOV5_MODEL_PATH = '/Users/ed/Git/yolov5/runs/train/exp38/weights/best.pt'
 YOLOV5_MODEL_CLASSES = [ 'tv', 'seller', 'unionForce' , 'pvp' , 'key' , 'normalNpc' ]
 
+CARD_DICT_FILE = 'img/cards/cardMap.txt'
 ROLE_DICT_FILE = 'img/roles/roleDict.txt'

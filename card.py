@@ -1,8 +1,10 @@
+import os
+import logging
+
 import cv2 as cv
 import numpy as np
 from shapely.geometry import Polygon
 import matplotlib.pyplot as plt
-import logging
 from log.log import setupLogging
 
 import tool
@@ -38,13 +40,15 @@ def checkInit(func):
 
 class CardCollection:
 
-
-    def __init__(self) -> None:
+    def __init__(self, configFile) -> None:
         self.isInitiated = False
         self.name2code = {}
         self.code2name = {}
+        self.init(configFile)
 
-    def init(self, configFile='img/cards/cardMap.txt'):
+    def init(self, configFile):
+        if not os.path.exists(configFile):
+            raise Exception(f"configFile {configFile} does not exist!")
         with open(configFile) as f:
             for line in f:
                 line = line.strip()

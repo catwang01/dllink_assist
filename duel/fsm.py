@@ -1,9 +1,11 @@
+from enum import Enum
+import logging
+
+
 from FSM import FSM
-import time
 from battleField import Direction
 import tool
 from card import Card, CardPlaceholder
-import logging
 from duel.status import *
 from mystatus import getSaiStatus, inDiagLog
 from general.status import generalStatusList
@@ -14,7 +16,7 @@ from transportGateDuel.status import transportGateHomePage
 from card import CardCollection
 from battleField import BattleField, Direction
 from unionForce.status import unionForcePage
-from enum import Enum
+from const import CARD_DICT_FILE
 
 
 class Phrase(Enum):
@@ -130,7 +132,7 @@ def cardExists(cardName, cardCollection):
 def testBattlePhrase(curStatus):
     logging.debug('testBattlePhrase start')
     bf = BattleField()
-    cardCollection = CardCollection().init()
+    cardCollection = CardCollection(CARD_DICT_FILE)
     isLastTurn = bf.nGetDeckLeftCard() == 0 or bf.nGetDeckLeftCard(direc=Direction.RIVAL) == 0
     logging.debug(f"LeftCard me: {bf.nGetDeckLeftCard()} rival: {bf.nGetDeckLeftCard(direc=Direction.RIVAL)}")
     if isLastTurn:
@@ -144,7 +146,7 @@ def testMainPhrase(status):
     logging.debug('testMainPhrase end')
     nextPhrase = Phrase.EndPhrase
     bf = BattleField()
-    cardCollection = CardCollection().init()
+    cardCollection = CardCollection(CARD_DICT_FILE)
     dogCardName = '魔导兽 刻耳柏洛斯'
     monster2 = '不屈斗士 磊磊'
     monster3 = '守墓的随从'

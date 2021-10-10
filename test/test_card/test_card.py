@@ -7,29 +7,40 @@ import cv2 as cv
 import pytest
 
 from card import CardCollection
+from const import CARD_DICT_FILE
+
+cardCollection = CardCollection(CARD_DICT_FILE)
 
 class TestCard:
 
-    @pytest.mark.parametrize('imgPath', [
-        'test/test_card/screenshot1.png',
-        'test/test_card/screenshot3.png',
-        'test/test_card/screenshot4.png',
+    @pytest.mark.parametrize('imgPath,cardName,area', [
+        ('test/test_card/screenshot1.png', '蓝药水', 'hand'),
+        ('test/test_card/screenshot3.png', '蓝药水', 'hand'),
+        ('test/test_card/screenshot4.png',  '蓝药水', 'hand'),
+        ('test/test_card/screenshot4.png',  '蓝药水', 'hand'),
+        ('test/test_card/screenshot5.png', '守墓的随从', 'hand'),
+        # ('test/test_card/screenshot6.png',  '行者哥布林', 'grave'),
     ])
-    def test_where(self, imgPath):
+    def test_where(self, imgPath, cardName, area):
         img_scene = cv.imread(imgPath)
-        cardCollection = CardCollection()
-        cardCollection.init()
 
-        card = cardCollection.getCardByName('蓝药水')
+        card = cardCollection.getCardByName(cardName)
         assert card.exists(img_scene=img_scene, init=True)
-        assert card.area == 'hand'
+        assert card.area == area
+
+
+    @pytest.mark.parametrize('imgPath, cardName, expected',
+    [
+        ('test/test_card/screenshot5.png', '蓝药水', False)
+    ])
+    def test_where_whether_exists(self, imgPath, cardName, expected):
+        img_scene = cv.imread(imgPath)
+        card = cardCollection.getCardByName(cardName)
+        assert card.exists(img_scene=img_scene, init=True) == expected
 
     def test_where_2(self):
         imgPath = 'test/test_card/screenshot2.png'
         img_scene = cv.imread(imgPath)
-        cardCollection = CardCollection()
-        cardCollection.init()
-
         card = cardCollection.getCardByName('魔导兽 刻耳柏洛斯')
         assert card.exists(img_scene=img_scene, init=True)
         assert card.area == 'monster'
@@ -44,13 +55,3 @@ class TestCard:
         card = cardCollection.getCardByName('蓝药水')
         card.init(img_scene=img_scene)
         assert card.area == 'grave'
-
-    def test_where_3(self):
-        imgPath = 'test/test_card/screenshot5.png'
-        img_scene = cv.imread(imgPath)
-        cardCollection = CardCollection()
-        cardCollection.init()
-
-        card = cardCollection.getCardByName('守墓的随从')
-        assert card.exists(img_scene=img_scene, init=True)
-        assert card.area == 'hand'
