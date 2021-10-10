@@ -1,5 +1,3 @@
-import os
-import time
 from queue import Queue
 import logging
 from threading import Thread
@@ -25,7 +23,7 @@ class SaveImgThread(Thread):
                 break
             plt.imsave(imgName, img[..., -1::-1])
             logging.debug("Img {} saved".format(imgName))
-        logging.debug("exit!")
+        # print(f"{self.name} exit!")
 
 queue = Queue()
 SaveImgThread(queue).start()
