@@ -76,7 +76,7 @@ class Card:
     def __init__(self, path, name=None) -> None:
         self.path = path
         self.name = name
-        self.img = cv.imread(path, cv.IMREAD_GRAYSCALE)
+        self.img = cv.imread(path)
         self._points = None
         self.icon = None
 
