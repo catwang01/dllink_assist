@@ -1,5 +1,5 @@
 {
         "python.testing.unittestEnabled": false,
         "python.testing.pytestEnabled": true,
-        "editor.tabSize": 4
+        "python.testing.autoTestDiscoverOnSaveEnabled": false
 }

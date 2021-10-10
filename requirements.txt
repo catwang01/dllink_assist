@@ -13,3 +13,4 @@ schedule
 UnityPy
 pexpect
 pytesseract==0.3.8
+pytest-xdist
