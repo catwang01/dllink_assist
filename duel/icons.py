@@ -35,6 +35,7 @@ useSkillPageTitle = Icon(f'{imgPath}/useSkillPageTitle.png')
 yourMainPhraseIcon = Icon(f'{imgPath}/yourMainPhraseIcon.png', similarity=0.95)
 yourBattlePhraseIcon = Icon(f'{imgPath}/yourBattlePhraseIcon.png', similarity=0.95)
 yourDrawCardPhraseIcon = Icon(f'{imgPath}/yourDrawCardPhraseIcon.png', similarity=0.95)
+rivalPharseIcon = Icon(f'{imgPath}/rivalPhraseIcon.png', similarity=0.95)
 
 setCardButton = Icon(f'{imgPath}/setCardButton.png')
 sumonButton = Icon(f'{imgPath}/sumonButton.png', clickSleepTime=3)

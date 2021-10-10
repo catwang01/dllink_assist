@@ -71,7 +71,7 @@ class EndTurnFSM(FSM):
                     curStatus.transfer('showAction')
                 elif curStatus.hasEndTurnButton():
                     curStatus.transfer('endTurn')
-                else:
+                elif curStage == rivalPharseIcon: # finished ending turn
                     break
             elif curStatus == duelFinishedPage:
                 break

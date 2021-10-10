@@ -148,6 +148,7 @@ manualDuelStatus = ManualDuelStatus(
                 yourDrawCardPhraseIcon,
                 yourMainPhraseIcon,
                 yourBattlePhraseIcon,
+                rivalPharseIcon
         ]
 )
 
