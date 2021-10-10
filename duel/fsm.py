@@ -195,16 +195,23 @@ class UseFSM(FSM):
     def run(self, card, target=None):
         self.beforeRun()
         assert card.area == 'hand'
+        used = False
         while True:
             curStatus = self.getCurrentStatus()
             if curStatus == manualDuelStatus:
-                if curStatus.hasButton('useCardButton'):
-                    curStatus.transfer('useCard')
-                    if target is None:
+                if used:
+                    if manualDuelStatus.hasActionButton():
                         break
+                    else:
+                        logging.warning(f"Using card {card}")
+                        manualDuelStatus.transfer("clickBlank")
                 else:
-                    card.drag()
-                    tool.sleep(0.5)
+                    if curStatus.hasButton('useCardButton'):
+                        curStatus.transfer('useCard')
+                        used =  True
+                    else:
+                        card.drag()
+                        tool.sleep(0.5)
             elif curStatus == selectTargetPage:
                 if curStatus.hasButton('confirmButton'):
                     curStatus.transfer('confirm')
@@ -229,15 +236,23 @@ class SumonFSM(FSM):
     def run(self, card: Card):
         self.beforeRun()
         assert card.area == 'hand'
+        sumoned = False
         while True:
             curStatus = self.getCurrentStatus()
             if curStatus == manualDuelStatus:
-                if curStatus.hasButton('sumonButton'):
-                    curStatus.transfer('sumon')
-                    break
+                if sumoned:
+                    if manualDuelStatus.hasActionButton(): # sumon is finised
+                        break
+                    else:
+                        logging.warning(f"Sumoning {card}")
+                        manualDuelStatus.transfer('clickBlank')
                 else:
-                    card.drag()
-                    tool.sleep(0.5)
+                    if curStatus.hasButton('sumonButton'):
+                        curStatus.transfer('sumon')
+                        sumoned = True
+                    else:
+                        card.drag()
+                        tool.sleep(0.5)
             else:
                 if self.handleUnexpectedStatus(curStatus):
                     break
