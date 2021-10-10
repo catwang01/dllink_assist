@@ -1,12 +1,16 @@
 from enum import Enum
+import logging
 
-from icons import CoordinateIcon
-from matplotlib import pyplot as plt
 import cv2
+from matplotlib import pyplot as plt
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 
+from icons import CoordinateIcon
+from log.log import setupLogging
 import tool
+
+setupLogging()
 
 def draw_png(name, font_file, font_size = 36):
     font=ImageFont.truetype(font_file, font_size)
@@ -27,59 +31,75 @@ def getTemplateImages(font):
         templates.append(image)
     return templates
 
-def extractNumber(img_, templates, showImg=False):
-    # 提取指定画面中的数字轮廓   
-    img = img_.copy()
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
+def boxNumber(img):
+    img = img.copy()
+    if len(img.shape) == 3:
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = img
+    ret, thresh = cv2.threshold(gray, 180, 255, cv2.THRESH_BINARY_INV |cv2.THRESH_TRUNC)
+    # tool.imshow(thresh)
+    mask = thresh > 180
+    thresh[mask] = 255
+    thresh[1 - mask] = 0
     _, contours, _ = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-    # plt.hist(gray.ravel())
-    # plt.imshow(img)
+    return contours, thresh
+
+def getMinScore(digit, i, template):
+    try:
+        score = cv2.matchTemplate(digit, template, cv2.TM_SQDIFF_NORMED)
+    except Exception:
+        logging.warning(f'template {i} is larger than img! matchTemplate can\'t be performed')
+    else:
+        minScore = cv2.minMaxLoc(score)[0]
+    return minScore
+
+def extractNumber(img, templates, showImg=False):
+    # 提取指定画面中的数字轮廓   
+    contours, thresh = boxNumber(img)
     result = []
     for cnt in contours:
         [x,y,w,h] = cv2.boundingRect(cnt)
         # filter by w, h
-        if 20 <= h <= 30 and 10 <= w <= 30:
+        if 20 <= h <= 30 and 5 <= w <= 30:
             result.append([x,y,w,h])
-    result.sort(key=lambda x:x[0])
+    # sort by x coordinate
+    result.sort(key=lambda x:x[0]) 
+
+    processedTemplates = [0] * 10
+    for i, template in enumerate(templates):
+        template = 255 - template
+        contours, tempThresh = boxNumber(template)
+        contour = max(contours, key=lambda x: cv2.contourArea(x))
+        x,y,w,h = cv2.boundingRect(contour)
+        processedTemplates[i] = tempThresh[y:y+h, x:x+w]
 
     predictVals = []
     for x, y, w, h in result:
         # 在画面中标记识别的结果                
-        cv2.rectangle(img, (x,y), (x+w,y+h), (0,0,255), 1)
-        digit = cv2.resize(thresh[y:y+h, x:x+w], (20, 25))
-        # digit = cv2.resize(gray[y:y+h, x:x+w], (20, 25))
+        padding = 8
+        cv2.rectangle(img, (x-padding,y-padding), (x+w+padding,y+h+padding), (0,0,255), 1)
+        height, width = thresh.shape
+        digit = thresh[max(y-padding, 0):min(y+h+padding, height), max(x-padding, 0):min(x+w+padding, width)]
+        _, contours, _ = cv2.findContours(digit, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        nContours = len(contours)
+        contourDict = {
+            1: [1, 2, 3, 5, 7],
+            2: [0, 4, 6, 9],
+            3: [8]
+        }
         res = []
-        for i, t in enumerate(templates):
-            score = cv2.matchTemplate(digit, t, cv2.TM_SQDIFF_NORMED)
-            minScore = cv2.minMaxLoc(score)[0]
-            res.append((i, minScore))
+        for i in contourDict[nContours]:
+            score = getMinScore(digit, i, processedTemplates[i])
+            res.append((i, score))
         res.sort(key=lambda x:x[1])
-        _, contours, _ = cv2.findContours(digit, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        if {res[0][0], res[1][0]} == {3, 8}:
-            if len(contours) == 2:
-                predictVal = 3
-            else:
-                predictVal = 8
-        # elif res[0][0] == 1:
-        #     # test = digit.copy()
-        #     # cv2.drawContours(test, contours, -1, (127,127), 1)
-        #     # tool.imshow(test)
-        #     # len(contours)
-        #     # cv2.contourArea(contours[0])
-        #     # cv2.contourArea(contours[1])
-        #     if len(contours) == 2:
-        #         predictVal = 1
-        #     else:
-        #         continue
-        else:
-            if res[0][1] < 0.5:
-                predictVal = res[0][0]
-            else:
-                continue
-        # print(predictVal, res)
-        predictVals.append(predictVal)
-        cv2.putText(img, str(f"{predictVal}"), (x, y+35), cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 0), 1)
+        if len(res) == 0: continue
+        predictVal = None
+        if res[0][1] < 0.5:
+            predictVal = res[0][0]
+        if predictVal is not None:
+            predictVals.append(predictVal)
+            cv2.putText(img, str(f"{predictVal}"), (x, y+25), cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 0), 1)
     if showImg:
         tool.imshow(img)
         plt.show()
@@ -101,9 +121,9 @@ class BattleField:
     def nGetDeckLeftCard(self, direc=Direction.SELF):
         numbers = None
         if direc == Direction.SELF:
-            icon = CoordinateIcon([(359, 469), (415, 556)])
+            icon = CoordinateIcon([(370, 496), (405, 530)])
         elif direc == Direction.RIVAL:
-            icon = CoordinateIcon([(58, 129), (105, 197)])
+            icon = CoordinateIcon([(55, 150), (95, 186)])
         else:
             raise Exception(f"No such item in {Direction}")
         icon.background = self.background

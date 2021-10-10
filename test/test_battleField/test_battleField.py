@@ -19,6 +19,11 @@ class TestBattleField:
         ('test/test_battleField/screenshot7.png', 1, 2),
         ('test/test_battleField/screenshot8.png', 0, 1),
         ('test/test_battleField/screenshot9.png', 1, 1),
+        ('test/test_battleField/screenshot10.png', 0, 1),
+        ('test/test_battleField/screenshot11.png', 6, 7),
+        ('test/test_battleField/screenshot12.png', 1, 2),
+        ('test/test_battleField/screenshot13.png', 0, 1),
+        ('test/test_battleField/screenshot14.png', 0, 1),
     ])
     def test_getDeckLeftCard(self, imgPath, expected1, expected2):
         bf = BattleField(imgPath)
