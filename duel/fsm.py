@@ -14,6 +14,13 @@ from transportGateDuel.status import transportGateHomePage
 from card import CardCollection
 from battleField import BattleField, Direction
 from unionForce.status import unionForcePage
+from enum import Enum
+
+
+class Phrase(Enum):
+    DrawPharse = 0
+    BattlePhrase = 1
+    EndPhrase = 2
 
 class BattleFSM(FSM):
 
@@ -125,6 +132,7 @@ def testBattlePhrase(curStatus):
     bf = BattleField()
     cardCollection = CardCollection().init()
     isLastTurn = bf.nGetDeckLeftCard() == 0 or bf.nGetDeckLeftCard(direc=Direction.RIVAL) == 0
+    logging.debug(f"LeftCard me: {bf.nGetDeckLeftCard()} rival: {bf.nGetDeckLeftCard(direc=Direction.RIVAL)}")
     if isLastTurn:
         dogCardName = '魔导兽 刻耳柏洛斯'
         monster2 = '不屈斗士 磊磊'
@@ -134,6 +142,7 @@ def testBattlePhrase(curStatus):
 
 def testMainPhrase(status):
     logging.debug('testMainPhrase end')
+    nextPhrase = Phrase.EndPhrase
     bf = BattleField()
     cardCollection = CardCollection().init()
     dogCardName = '魔导兽 刻耳柏洛斯'
@@ -143,7 +152,7 @@ def testMainPhrase(status):
 
     # sumon monster
     isLastTurn = bf.nGetDeckLeftCard() == 0 or bf.nGetDeckLeftCard(direc=Direction.RIVAL) == 0
-    logging.debug(f"leftCard: me: {bf.nGetDeckLeftCard()} rival: {bf.nGetDeckLeftCard(direc=Direction.RIVAL)}")
+    logging.debug(f"LeftCard me: {bf.nGetDeckLeftCard()} rival: {bf.nGetDeckLeftCard(direc=Direction.RIVAL)}")
     if isCardInHandArea(dogCardName, cardCollection):
         sumonCard(dogCardName, cardCollection)
     else:
@@ -158,6 +167,7 @@ def testMainPhrase(status):
             while isCardInHandArea(cardName, cardCollection):
                 useCard(cardName, cardCollection)
     if isLastTurn:
+        nextPhrase = Phrase.BattlePhrase
         for cardName in ['H-火热之心', '联合攻击']:
             while isCardInHandArea(cardName, cardCollection):
                 if cardName == 'H-火热之心':
@@ -166,7 +176,9 @@ def testMainPhrase(status):
                     useCard('联合攻击', cardCollection, target='守墓的随从')
                 else:
                     useCard(cardName, cardCollection)
+    
     logging.debug('testMainPhrase end')
+    return nextPhrase
 
 
 class UseFSM(FSM):
@@ -284,8 +296,13 @@ class ManualDuelFSM(FSM):
                     testBattlePhrase(curStatus)
                     EndTurnFSM().run()
                 elif curStage == yourMainPhraseIcon:
-                    testMainPhrase(curStatus) 
-                    BattleFSM().run()
+                    nextPhrase = testMainPhrase(curStatus) 
+                    if nextPhrase == Phrase.BattlePhrase:
+                        BattleFSM().run()
+                    elif nextPhrase == Phrase.EndPhrase:
+                        EndTurnFSM().run()
+                    else:
+                        raise Exception(f"No such phrase {nextPhrase}")
             elif curStatus == useSkillPage:
                 curStatus.transfer('useSkill')
             elif curStatus == duelFinishedPage:
