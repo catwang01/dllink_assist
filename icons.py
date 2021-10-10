@@ -6,13 +6,16 @@ import glob
 import cv2
 from tool import HashableNdArray
 from inference import DetectObject
+from const import ICON_DEFAULT_SLEEP_CLICK_TIME
 
 class Icon:
-        def __init__(self, path, name=None, check=True, background=None, clickSleepTime=0.5, *args, **kwargs) -> None:
+        def __init__(self, path, name=None, check=True, background=None, clickSleepTime=None, *args, **kwargs) -> None:
                 self.path = path
                 self.name = name
-
-                self.clickSleepTime = clickSleepTime
+                if clickSleepTime is None:
+                        self.clickSleepTime = ICON_DEFAULT_SLEEP_CLICK_TIME
+                else:
+                        self.clickSleepTime = clickSleepTime
                 if check and not os.path.exists(self.path):
                         raise Exception("Can't find img: {}".format(self.path))
                 self.img = cv2.imread(self.path)
