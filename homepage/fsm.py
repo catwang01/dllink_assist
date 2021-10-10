@@ -93,19 +93,21 @@ class CollectHiddentItemFSM(FSM):
         return
 
 
-class TranserAllChannels(FSM):
+class TransferAllChannels(FSM):
 
-    name = 'TranserAllChannels'
+    name = 'TransferAllChannels'
     statusList = [
         homePage
     ] + generalStatusList
 
     def run(self, fsm, *args, **kwargs):
         self.beforeRun()
+        channels = ['pvp', 'transportGate', 'store', 'workshop', 'monsterGate']
         while True:
             curStatus = self.getCurrentStatus()
             if curStatus == homePage:
-                channels = ['pvp', 'transportGate', 'store', 'workshop', 'monsterGate']
+                if len(channels) == 0:
+                    break
                 while len(channels):
                     curStatus = self.getCurrentStatus()
                     if curStatus == homePage:
@@ -116,7 +118,8 @@ class TranserAllChannels(FSM):
                         yield channel, ret
                     elif curStatus in generalStatusList:
                         curStatus.transfer('default')
-                break
+                    else:
+                        break
             elif curStatus in generalStatusList:
                 curStatus.transfer('default')
             else:
@@ -334,17 +337,17 @@ class HomePageFSM(FSM):
         return
 
     def collectKeys(self):
-        results = TranserAllChannels().run(CollectKeysInCurrentChannel())
+        results = TransferAllChannels().run(CollectKeysInCurrentChannel())
         for ret, channel in results:
             pass
 
     def duelWithNormalNpcs(self):
-        results = TranserAllChannels().run(DuelWithAllNpcInCurrentChannel())
+        results = TransferAllChannels().run(DuelWithAllNpcInCurrentChannel())
         for ret, channel in results:
             pass
 
     def collectHiddenItems(self):
-        results = TranserAllChannels().run(CollectHiddentItemFSM())
+        results = TransferAllChannels().run(CollectHiddentItemFSM())
         for ret, channel in results:
             pass
 
