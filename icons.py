@@ -120,6 +120,8 @@ class CoordinateIcon(Icon):
         def __init__(self, position=None, name=None, background=None, clickStepTime=0.5) -> None:
                 self.path = None
                 self.name = name
+                self._background = None
+                self.background = background
 
                 self._position = [
                         (position[0][0] * 2, position[0][1] * 2),
