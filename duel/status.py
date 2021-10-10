@@ -124,7 +124,7 @@ manualDuelStatus = ManualDuelStatus(
                 "actionButton": actionButton,
                 "battleButton": battleButton,
                 'endTurnButton': endTurnButton,
-                'drawCardIcon': drawCardIcon,
+                'blankPlace': blankPlace,
                 'skillButton': skillButton,
                 'firstTurnIcon': firstTurnIcon,
                 'sumonButton': sumonButton,
@@ -138,10 +138,10 @@ manualDuelStatus = ManualDuelStatus(
                 "showAction": lambda status: actionButton.click(),
                 "battle": lambda status: battleButton.click(),
                 "endTurn": lambda status: endTurnButton.click(),
-                "drawCard": lambda status: drawCardIcon.click(),
                 'clickUseSkillButton': lambda status: skillButton.click(),
                 'sumon': lambda status: sumonButton.click(),
-                'useCard': lambda status: useCardButton.click()
+                'useCard': lambda status: useCardButton.click(),
+                "clickBlank": lambda status: blankPlace.click(),
         },
         condition="settingButton",
         stages = [

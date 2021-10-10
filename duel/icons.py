@@ -17,12 +17,11 @@ leftZeroAutoButton = Icon(f'img/transportGateDuel/leftZeroButton.png')
 autoControlButton = Icon(f'img/duel/autoControlButton.png')
 autoControlOffButton = Icon(f'img/duel/autoControlOffButton.png')
 
-actionButton = Icon(f'{imgPath}/actionButton.png')
+actionButton = Icon(f'{imgPath}/actionButton.png', clickSleepTime=0.1)
+battleButton = MultiIcon(glob.glob(f'{imgPath}/battleButton*.png'), similarity=0.6, colorCloseThreshold=1, clickSleepTime=0.1)
+endTurnButton = MultiIcon(glob.glob(f'{imgPath}/endTurnButton*.png'), similarity=0.6, colorCloseThreshold=1, clickSleepTime=0.1)
 
-battleButton = MultiIcon(glob.glob(f'{imgPath}/battleButton*.png'), similarity=0.6, colorCloseThreshold=1)
-endTurnButton = MultiIcon(glob.glob(f'{imgPath}/endTurnButton*.png'), similarity=0.6, colorCloseThreshold=1)
-# drawCardIcon = Icon(f'{imgPath}/drawCard.png', similarity=0.6)
-drawCardIcon = CoordinateIcon(position=[(180, 240), (380, 540)], name='drawCardIcon', clickSleepTime=1.5)
+blankPlace = CoordinateIcon(position=[(190, 560), (275, 570)], name='blackPlace', clickSleepTime=0)
 skillButton = Icon(f'{imgPath}/skillButton.png')
 firstTurnIcon = Icon(f'{imgPath}/firstTurnIcon.png', similarity=0.95)
 

@@ -308,7 +308,7 @@ class ManualDuelFSM(FSM):
                 if curStatus.canUseSkill():
                     curStatus.transfer('clickUseSkillButton')
                 elif curStage == yourDrawCardPhraseIcon:
-                    curStatus.transfer('drawCard')
+                    curStatus.transfer('clickBlank')
                 elif curStatus.isFirstTurn() or curStage == yourBattlePhraseIcon:
                     testBattlePhrase(curStatus)
                     EndTurnFSM().run()
