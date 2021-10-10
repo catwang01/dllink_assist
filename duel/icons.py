@@ -22,7 +22,7 @@ actionButton = Icon(f'{imgPath}/actionButton.png')
 battleButton = MultiIcon(glob.glob(f'{imgPath}/battleButton*.png'), similarity=0.6, colorCloseThreshold=1)
 endTurnButton = MultiIcon(glob.glob(f'{imgPath}/endTurnButton*.png'), similarity=0.6, colorCloseThreshold=1)
 # drawCardIcon = Icon(f'{imgPath}/drawCard.png', similarity=0.6)
-drawCardIcon = CoordinateIcon(position=[(180, 240), (380, 540)], name='drawCardIcon', clickStepTime=1.5)
+drawCardIcon = CoordinateIcon(position=[(180, 240), (380, 540)], name='drawCardIcon', clickSleepTime=1.5)
 skillButton = Icon(f'{imgPath}/skillButton.png')
 firstTurnIcon = Icon(f'{imgPath}/firstTurnIcon.png', similarity=0.95)
 

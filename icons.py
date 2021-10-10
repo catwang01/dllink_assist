@@ -117,7 +117,7 @@ class MultiIcon(Icon):
 
 class CoordinateIcon(Icon):
 
-        def __init__(self, position=None, name=None, background=None, clickStepTime=0.5) -> None:
+        def __init__(self, position=None, name=None, background=None, clickSleepTime=0.5) -> None:
                 self.path = None
                 self.name = name
                 self._background = None
@@ -127,7 +127,7 @@ class CoordinateIcon(Icon):
                         (position[0][0] * 2, position[0][1] * 2),
                         (position[1][0] * 2, position[1][1] * 2),
                 ]
-                self.clickSleepTime = clickStepTime
+                self.clickSleepTime = clickSleepTime
         
         @property
         def position(self):
