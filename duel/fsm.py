@@ -308,6 +308,8 @@ class ManualDuelFSM(FSM):
                 if curStatus.canUseSkill():
                     curStatus.transfer('clickUseSkillButton')
                 elif curStage == yourDrawCardPhraseIcon:
+                    logging.info('Waiting before drawCard')
+                    tool.sleep(1)
                     curStatus.transfer('clickBlank')
                 elif curStatus.isFirstTurn() or curStage == yourBattlePhraseIcon:
                     testBattlePhrase(curStatus)
