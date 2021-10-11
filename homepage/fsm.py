@@ -132,7 +132,7 @@ class TransferAllChannels(FSM):
 class DuelWithAllNpcInCurrentChannel(FSM):
 
     name = 'DuelWithAllNpcInCurrentChannel'
-    statusList = [homePage, inDiagLog]
+    statusList = [homePage, inDiagLog, selectDuelMode]
 
     def run(self):
         self.beforeRun()
@@ -144,7 +144,7 @@ class DuelWithAllNpcInCurrentChannel(FSM):
                     curStatus.transfer('clickOneNormalNpc', 2)
                 else:
                     break
-            elif curStatus == inDiagLog:
+            elif curStatus in {inDiagLog, selectDuelMode}:
                 DuelWithOneNormalNPC().run()
                 nNormalNpcs += 1
             elif curStatus in generalStatusList:
