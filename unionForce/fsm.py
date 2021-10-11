@@ -4,6 +4,7 @@ from mystatus import inDiagLog
 from duel.fsm import DuelFSM
 from homepage.status import homePage
 from duel.status import selectDuelMode
+from general.status import generalStatusList
 
 class UnionForceFSM(FSM):
 
@@ -13,7 +14,7 @@ class UnionForceFSM(FSM):
         unionForcePage, 
         inDiagLog,
         selectDuelMode
-    ]
+    ] + generalStatusList
 
     def run(self):
         self.beforeRun()
@@ -31,6 +32,8 @@ class UnionForceFSM(FSM):
                 DuelFSM().run()
                 nDuels += 1
                 break
+            elif curStatus in generalStatusList:
+                curStatus.transfer("default")
             elif curStatus == homePage:
                 break
             else:
