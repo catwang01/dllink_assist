@@ -17,6 +17,7 @@ from card import CardCollection
 from battleField import BattleField, Direction
 from unionForce.status import unionForcePage
 from const import CARD_DICT_FILE
+from connectionError.status import networkConnectionPage
 
 
 class Phrase(Enum):
@@ -378,7 +379,8 @@ class DuelFSM(FSM):
         inDiagLog,
         transportGateHomePage,
         homePage,
-        unionForcePage
+        unionForcePage, 
+        networkConnectionPage
     ] + generalStatusList
 
     name = 'DuelFSM'
@@ -408,6 +410,8 @@ class DuelFSM(FSM):
                 curStatus.transfer("default")
             elif curStatus == loginPage:
                 LoginFSM().run()
+            elif curStatus == networkConnectionPage:
+                networkConnectionPage.transfer("retry")
             elif curStatus in {transportGateHomePage, homePage, inDiagLog, unionForcePage}:
                 break
             else:
