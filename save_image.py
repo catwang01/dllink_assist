@@ -1,6 +1,7 @@
-from queue import Queue
+import os
+from queue import Queue, Empty
 import logging
-from threading import Thread
+import threading
 
 from matplotlib import pyplot as plt
 
@@ -8,7 +9,7 @@ from log.log import setupLogging
 
 setupLogging()
 
-class SaveImgThread(Thread):
+class SaveImgThread(threading.Thread):
 
     def __init__(self, queue, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -19,10 +20,17 @@ class SaveImgThread(Thread):
         while True:
             try:
                 imgName, img = self.queue.get(timeout=20)
-            except Exception:
-                break
-            plt.imsave(imgName, img[..., -1::-1])
-            logging.debug("Img {} saved".format(imgName))
+            except Empty:
+                if not threading.main_thread().is_alive():
+                    break
+            else:
+                images = os.listdir('collectImgs')
+                if len(images) >= 30:
+                    logging.info("Deleting images files!")
+                    for imageName in images:
+                        os.remove(os.path.join('collectImgs', imageName))
+                plt.imsave(imgName, img[..., -1::-1])
+                logging.info("Img {} saved".format(imgName))
         # print(f"{self.name} exit!")
 
 queue = Queue()
