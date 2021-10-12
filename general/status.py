@@ -11,6 +11,7 @@ generalYesPage = Status(
                 'default': lambda status:generalYesButton.click()
         },
         condition="yesButton",
+        level=-1
 )
 
 generalClosePage= Status(
@@ -23,6 +24,7 @@ generalClosePage= Status(
                 'default': lambda status:generalCloseButton.click()
         },
         condition="closeButton",
+        level=-1
 )
 
 
@@ -36,6 +38,7 @@ generalNextPage= Status(
                 'default': lambda status:generalNextButton.click()
         },
         condition="nextButton",
+        level=-1
 )
 
 generalCancelPage = Status(
@@ -48,6 +51,7 @@ generalCancelPage = Status(
                 'default': lambda status: generalCancelButton.click(),
         },
         condition="cancelButton",
+        level=-1
 )
 
 generalReturnPage= Status(
@@ -60,6 +64,7 @@ generalReturnPage= Status(
                 'default': lambda status:generalReturnButton.click()
         },
         condition="returnButton",
+        level=-1
 )
 
 generalStatusList = [
