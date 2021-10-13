@@ -6,7 +6,7 @@ import time
 import mystatus
 from mystatus import Status
 from log.log import setupLogging
-from const import MIN_REFRESH_INTERVAL
+from const import MIN_REFRESH_INTERVAL, FSM_UNEXPECTED_TOLERANCE
 
 setupLogging()
 
@@ -19,6 +19,7 @@ class FSM(metaclass=FsmMetaClass):
     statusList =  []
     refreshScreenTime = -1
     minRefreshInterval = MIN_REFRESH_INTERVAL
+    unexpectedTolerance = FSM_UNEXPECTED_TOLERANCE
     name = 'FSM'
 
     def showScreen(self):
@@ -61,7 +62,7 @@ class FSM(metaclass=FsmMetaClass):
         logging.debug(f"leaving FSM {self.name}")
 
     def handleUnexpectedStatus(self, curStatus):
-        if self.nUnexpectedStatus == 20:
+        if self.nUnexpectedStatus == self.unexpectedTolerance:
             logging.debug("got {} unexpected status: {}".format(self.nUnexpectedStatus, self.unexpectedStatus))
             return True
         elif self.unexpectedStatus == curStatus:

@@ -17,3 +17,5 @@ YOLOV5_MODEL_CLASSES = [ 'tv', 'seller', 'unionForce' , 'pvp' , 'key' , 'normalN
 
 CARD_DICT_FILE = 'img/cards/cardMap.txt'
 ROLE_DICT_FILE = 'img/roles/roleDict.txt'
+
+FSM_UNEXPECTED_TOLERANCE = 50
