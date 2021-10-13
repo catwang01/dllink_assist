@@ -64,9 +64,9 @@ class Icon:
         
         def showImg(self, showBackground=True):
                 if showBackground:
-                        plt.subplots(211)
+                        plt.subplot(121)
                         tool.imshow(self.img)
-                        plt.subplots(212)
+                        plt.subplot(122)
                         tool.imshow(self.background)
                 else:
                         tool.imshow(self.img)
