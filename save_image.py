@@ -4,6 +4,7 @@ import logging
 import threading
 
 from matplotlib import pyplot as plt
+from const import MAX_IMAGE_SIZE
 
 from log.log import setupLogging
 
@@ -25,7 +26,7 @@ class SaveImgThread(threading.Thread):
                     break
             else:
                 images = os.listdir('collectImgs')
-                if len(images) >= 30:
+                if len(images) >= MAX_IMAGE_SIZE:
                     logging.info("Deleting images files!")
                     for imageName in images:
                         os.remove(os.path.join('collectImgs', imageName))
