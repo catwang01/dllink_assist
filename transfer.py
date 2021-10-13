@@ -76,4 +76,4 @@ class StatusControlThread(threading.Thread, FSM):
             elif curStatus == loginPage:
                 LoginFSM().run()
             elif curStatus == networkConnectionPage:
-                curStatus.transfer('reboot')
+                curStatus.transfer('reboot', 1)
