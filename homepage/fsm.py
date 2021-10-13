@@ -120,10 +120,14 @@ class TransferAllChannels(FSM):
                         yield channel, ret
                     elif curStatus in generalStatusList:
                         curStatus.transfer('default')
+                    elif curStatus == someoneAppearIcon:
+                        curStatus.transfer('know')
                     else:
                         break
             elif curStatus in generalStatusList:
                 curStatus.transfer('default')
+            elif curStatus == someoneAppearIcon:
+                curStatus.transfer('iknow')
             else:
                 if self.handleUnexpectedStatus(curStatus):
                     break
@@ -134,7 +138,7 @@ class TransferAllChannels(FSM):
 class DuelWithAllNpcInCurrentChannel(FSM):
 
     name = 'DuelWithAllNpcInCurrentChannel'
-    statusList = [homePage, inDiagLog, selectDuelMode]
+    statusList = [homePage, inDiagLog, selectDuelMode] + generalStatusList
 
     def run(self):
         self.beforeRun()
@@ -396,8 +400,8 @@ class HomePageFSM(FSM):
             self.unionForceChallenge()
             tool.sleep(3)
             self.collectHiddenItems()
+            tool.sleep(3)
             # self.runSai()
-            # tool.sleep(3)
         # for i in range(5):
         #     # tianjoyin
         #     # mutouyougi

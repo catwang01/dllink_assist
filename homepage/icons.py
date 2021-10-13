@@ -35,4 +35,8 @@ switchWorldButton = CoordinateIcon(position=[(20, 210), (40, 230)])
 DMWorldIcon = MultiIcon(['img/DMWorldIcon_load.png', 'img/DMWorldIcon_nonload.png', 'img/DMWorldIcon_nonload2.png'])
 GXWorldIcon = MultiIcon(['img/GXWorldIcon_load.png', 'img/GXWorldIcon_nonload.png'])
 
+unionForceIcon = Icon(f'{imgDirPath}/unionForceIcon.png', clickSleepTime=1.5)
+
+someoneAppearIcon = Icon(f'{imgDirPath}/someoneAppearIcon.png')
+
 ddCastleIcon = CoordinateIcon(position=[(211, 646), (263, 655)], name='ddCastleIcon')

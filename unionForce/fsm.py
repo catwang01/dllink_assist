@@ -24,8 +24,10 @@ class UnionForceFSM(FSM):
             if curStatus == unionForcePage:
                 if curStatus.hasButton('challengeButton'):
                     curStatus.transfer('challenge')
+                elif curStatus.hasButton('closeButton'):
+                    curStatus.transfer("close")
                 else:
-                    curStatus.transfer('return')
+                    curStatus.transfer('return', 1)
             elif curStatus == inDiagLog:
                 curStatus.transfer('next')
             elif curStatus == selectDuelMode:

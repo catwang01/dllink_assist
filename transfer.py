@@ -21,6 +21,7 @@ from login.fsm import LoginFSM
 from homepage.fsm import HomePageFSM
 from homepage.status import homePage
 from connectionError.status import networkConnectionPage
+from homepage.status import someoneAppearIcon
 
 
 setupLogging()
@@ -73,6 +74,8 @@ class StatusControlThread(threading.Thread, FSM):
                 HomePageFSM().run()
             elif curStatus in generalStatusList:
                 curStatus.transfer('default')
+            elif curStatus == someoneAppearIcon:
+                curStatus.transfer('iknow')
             elif curStatus == loginPage:
                 LoginFSM().run()
             elif curStatus == networkConnectionPage:

@@ -19,19 +19,21 @@ class TestCard:
         ('test/test_card/screenshot4.png',  '蓝药水', 'hand'),
         ('test/test_card/screenshot4.png',  '蓝药水', 'hand'),
         ('test/test_card/screenshot5.png', '守墓的随从', 'hand'),
-        # ('test/test_card/screenshot6.png',  '行者哥布林', 'grave'),
+        ('test/test_card/screenshot6.png',  '行者哥布林', 'grave'),
+        ('test/test_card/screenshot9.png', '守墓的随从', 'hand'),
     ])
     def test_where(self, imgPath, cardName, area):
         img_scene = cv.imread(imgPath)
 
         card = cardCollection.getCardByName(cardName)
-        assert card.exists(img_scene=img_scene, init=True)
+        assert card.exists(img_scene=img_scene, init=True, showImg=False)
         assert card.area == area
 
 
     @pytest.mark.parametrize('imgPath, cardName, expected',
     [
-        ('test/test_card/screenshot5.png', '蓝药水', False)
+        ('test/test_card/screenshot5.png', '蓝药水', False),
+        ('test/test_card/screenshot8.png', '魔导兽 刻耳柏洛斯', True)
     ])
     def test_where_whether_exists(self, imgPath, cardName, expected):
         img_scene = cv.imread(imgPath)
