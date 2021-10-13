@@ -91,8 +91,8 @@ kuloNoSuOccurPage = Status(
                 "locator": kuloNoSuOccurPageLocator
         },
         transferDict={
-                "close": generalCloseButton.click,
-                "goto": kuloNoSuOccurPageGoTo.click
+                "close": lambda status: generalCloseButton.click(),
+                "goto": lambda status: kuloNoSuOccurPageGoTo.click()
         },
         condition='locator'
 )
