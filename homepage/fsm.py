@@ -11,6 +11,8 @@ from login.fsm import LoginFSM
 from homepage.status import *
 from activity.sai.status import saiHomePage
 from activity.sai.fsm import SaiFSM
+from activity.ddCastle.fsm import DDCastleFSM
+from activity.ddCastle.status import ddCastleHomePage
 from unionForce.fsm import UnionForceFSM
 from unionForce.status import unionForcePage
 from tool import capitalize
@@ -245,6 +247,30 @@ class HomepageEnterUnionForce(FSM):
         self.afterRun()
         return 
 
+class HomepageEnterDDCastle(FSM):
+    
+    name = 'HomepageEnterDDCastle'
+    statusList = [homePage, ddCastleHomePage] + generalStatusList
+
+    def run(self):
+        self.beforeRun()
+        while True:
+            curStatus = self.getCurrentStatus()
+            if curStatus == homePage:
+                if curStatus.hasButton('ddCastleIcon'):
+                    curStatus.transfer('enterDDCastle')
+            elif curStatus == ddCastleHomePage:
+                DDCastleFSM().run()
+            elif curStatus in generalStatusList:
+                curStatus.transfer('default')
+            elif curStatus == someoneAppearIcon:
+                curStatus.transfer("iknow")
+            else:
+                if self.handleUnexpectedStatus(curStatus):
+                    break
+        self.afterRun()
+        return
+
 class HomePageFSM(FSM):
 
     name = 'HomePageFSM'
@@ -354,6 +380,9 @@ class HomePageFSM(FSM):
     def unionForceChallenge(self):
         HomepageEnterUnionForce().run()
 
+    def runDDCastle(self):
+        HomepageEnterDDCastle().run()
+
     def run(self):
         for world in ['DMWorld', 'GXWorld']:
             self.changeWorld(world)
@@ -362,6 +391,8 @@ class HomePageFSM(FSM):
             tool.sleep(3)
             self.duelWithNormalNpcs()
             tool.sleep(3)
+            # self.runDDCastle()
+            # tool.sleep(3)
             self.unionForceChallenge()
             tool.sleep(3)
             self.collectHiddenItems()
