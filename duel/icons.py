@@ -4,7 +4,7 @@ import glob
 imgPath = 'img/duel'
 
 duelButton = Icon('img/duelButton.png', colorCloseThreshold=1)
-autoDuelButton = MultiIcon(glob.glob('img/autoDuelButton*.png'), colorCloseThreshold=1)
+autoDuelButton = MultiIcon(glob.glob('img/autoDuelButton*.png'), colorCloseThreshold=1, clickSleepTime=1)
 autoDuelOffButton = Icon('img/autoDuelOffButton.png')
 
 saveVideoButton = Icon('img/saveVideo.png')
