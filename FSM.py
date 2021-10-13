@@ -22,6 +22,9 @@ class FSM(metaclass=FsmMetaClass):
     unexpectedTolerance = FSM_UNEXPECTED_TOLERANCE
     name = 'FSM'
 
+    def __init__(self) -> None:
+        self.lastUnexpectedOccurTime = -1
+
     def showScreen(self):
         tool.imshow(tool.get_appshot())
 
@@ -39,38 +42,41 @@ class FSM(metaclass=FsmMetaClass):
         else:
                 self.refreshScreenTime = time.time()
                 tool.capture_screenshot()
-                logging.debug(f"The screen has been refreshed! refreshScreenTime: {tool.formatTime(self.refreshScreenTime)}")
+                logging.info(f"The screen has been refreshed! refreshScreenTime: {tool.formatTime(self.refreshScreenTime)}")
 
     def getCurrentStatus(self, refresh=True) -> Optional[Status]:
         if refresh:
             self.refreshScreen()
-        logging.debug('Getting current status')
+        logging.info('Getting current status')
         curStatus = None
         for status in self.statusList:
             if status.check():
                 curStatus = status 
                 break
-        logging.debug("Current status: {}".format(curStatus))
+        logging.info("Current status: {}".format(curStatus))
         return curStatus
 
     def beforeRun(self):
         self.nUnexpectedStatus = 0
         self.unexpectedStatus = None
-        logging.debug(f"entering FSM {self.name}")
+        logging.info(f"entering FSM {self.name}")
 
     def afterRun(self):
-        logging.debug(f"leaving FSM {self.name}")
+        logging.info(f"leaving FSM {self.name}")
 
     def handleUnexpectedStatus(self, curStatus):
+        now = time.time()
         if self.nUnexpectedStatus == self.unexpectedTolerance:
-            logging.debug("got {} unexpected status: {}".format(self.nUnexpectedStatus, self.unexpectedStatus))
+            logging.info("got {} unexpected status: {}".format(self.nUnexpectedStatus, self.unexpectedStatus))
             return True
-        elif self.unexpectedStatus == curStatus:
+        elif self.unexpectedStatus == curStatus and (self.lastUnexpectedOccurTime == -1 or (now - self.lastUnexpectedOccurTime) < 10):
             self.nUnexpectedStatus += 1
+            logging.info(f"CurrentFSM: {self.name} got {self.nUnexpectedStatus} unexpected status: {self.unexpectedStatus}")
         else:
+            self.lastUnexpectedOccurTime = now
             self.unexpectedStatus = curStatus
             self.nUnexpectedStatus = 0
-        logging.debug(f"CurrentFSM: {self.name} got {self.nUnexpectedStatus} unexpected status: {self.unexpectedStatus}")
+            logging.info(f"Reset unexpected status!")
         return False
 
     def run(self, *args, **kwargs) :
