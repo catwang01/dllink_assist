@@ -10,9 +10,9 @@ from mystatus import inDiagLog
 
 class AddCardFSM(FSM):
 
-    statusList = [addCardsStatus]
+    statusList = [addCardsStatus, loginPage] + generalStatusList 
     def run(self, *args, **kwargs):
-        self.initRun()
+        self.beforeRun()
         while True:
             curStatus = self.getCurrentStatus()
             if curStatus == addCardsStatus:
@@ -20,13 +20,14 @@ class AddCardFSM(FSM):
                     curStatus.transfer('add')
                 elif curStatus in generalStatusList:
                     curStatus.transfer('default')
-                elif curStatus in loginPage:
+                elif curStatus == loginPage:
                     LoginFSM().run()
                 else:
                     curStatus.transfer("check")
             else:
                 if self.handleUnexpectedStatus(curStatus):
                     break
+        self.afterRun()
         return
 
 class MazeFSM(FSM):
