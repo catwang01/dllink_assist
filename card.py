@@ -16,19 +16,31 @@ setupLogging()
 def computeArea(points):
     return Polygon(points).area
 
-def isValidCard(points, threshold=None):
-    if threshold is None:
-        threshold = 1 / np.pi
-    polygonArea = computeArea(points)
-    if  polygonArea < 6000 or polygonArea > 50000:
-        return False
+def checkParallel(points, threshold):
     line1 = np.array(points[0]) - np.array(points[1])
     line2 = np.array(points[-1]) - np.array(points[-2])
     # diff = np.sqrt(np.sum(np.square(line1 - line2))) 
     cosine = np.sum(line1 * line2) / (np.sqrt(np.sum(line1 ** 2) * np.sum(line2 ** 2)))
-    diff = np.abs(np.arccos(cosine))
-    logging.debug(f"diff: {diff:1.3} threshold: {threshold:1.3} result: {diff < threshold}")
-    return diff < threshold
+    theta = np.abs(np.arccos(cosine))
+    return np.isclose(theta, 0, atol=threshold)
+
+def checkVertical(points, threshold):
+    line1 = np.array(points[0]) - np.array(points[1])
+    line2 = np.array(points[0]) - np.array(points[-1])
+    # diff = np.sqrt(np.sum(np.square(line1 - line2))) 
+    cosine = np.sum(line1 * line2) / (np.sqrt(np.sum(line1 ** 2) * np.sum(line2 ** 2)))
+    theta = np.abs(np.arccos(cosine))
+    return np.isclose(theta, np.pi / 2, atol=threshold)
+
+def isValidCard(points, threshold=None):
+    if threshold is None:
+        threshold = 1 / np.pi
+    polygonArea = computeArea(points)
+    if polygonArea < 6000 or polygonArea > 50000:
+        return False
+    return  checkParallel(points, threshold) and \
+            checkVertical(points, threshold) and \
+            checkParallel(points[1:] + [points[0]], threshold)
 
 def checkInit(func):
     def wrapped(*args, **kwargs):
@@ -71,86 +83,17 @@ class CardCollection:
 
 class Card:
 
-    detector = cv.xfeatures2d.SIFT_create()
-
     def __init__(self, path, name=None) -> None:
         self.path = path
         self.name = name
         self.img = cv.imread(path)
-        self._points = None
-        self.icon = None
-
-    @property
-    def points(self):
-        if self._points is None:
-            raise Exception(f"Card {self} can't be found!")
-        return self._points
 
     def __repr__(self) -> str:
-        return f"Card(name='{self.name}', path='{self.path}', area='{self.area}')"
-
-    def init(self, *args, **kwargs):
-        self._points = self.detect(*args, **kwargs)
-        if self._points is not None:
-            self.icon = CoordinateIcon([
-                (self.points[0][0]/2, self.points[0][1]/2), 
-                (self.points[2][0]/2, self.points[2][1]/2)
-            ])
-            logging.debug(f"{self} initiated")
-        else:
-            self.icon = None
-            logging.warning(f"{self} doesn't exists")
-
-    def exists(self, init=False, *args, **kwargs):
-        if init:
-            self.init(*args, **kwargs)
-        return self._points is not None
+        return f"Card(name='{self.name}', path='{self.path}')"
 
     def show(self):
         plt.imshow(self.img)
         plt.show()
-
-    def detect(self, img_scene=None, threshold=None, *args, **kwargs):
-        img_object = self.img
-        if img_scene is None:
-            img_scene = get_appshot()
-        with Timer('find_img_by_descriptor', stdout=logging.debug):
-            scene_corners  = tool.find_img_by_descriptor(
-                img_object, img_scene, detector=self.detector, *args, **kwargs
-            )
-        if scene_corners is None:
-            return None
-        points = scene_corners.squeeze().tolist()
-        if not isValidCard(points, threshold):
-            return None
-        return points
-
-    def click(self):
-        return self.icon.click(x=-10)
-
-    def drag(self, endPoint=(200, 300)):
-        curPosition = self.click()
-        tool.Operation().slide(curPosition, endPoint)
-
-    @property
-    def area(self):
-        if self.icon is None:
-            return None
-        w = self.icon.position[0][0] / 2
-        h = self.icon.position[0][1] / 2
-        position = None
-        if h > 580:
-            position = 'hand'
-        elif 460 < h <= 540:
-            position = 'spell'
-        elif 340 < w <= 390 and 350 < h <= 430:
-            position = 'grave'
-        elif 365 < h <= 455:
-            position = 'monster'
-        else:
-            logging.warning(f'w,h={w},{h} not falls in one category!')
-            # raise Exception(f'h = {h} not falls in one category!')
-        return position
 
 
 class CardPlaceholder:

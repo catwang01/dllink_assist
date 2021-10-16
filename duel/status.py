@@ -152,10 +152,9 @@ manualDuelStatus = ManualDuelStatus(
         ]
 )
 
-def selectTargetByCard(status, card):
-        if isinstance(card, Card):
-                card.init()
-        card.click()
+def selectTargetByCard(status, card, bf):
+        icon = bf.checkArea(card, area=None)
+        icon.click()
 
 selectTargetPage = Status(
         name="selectTargetPage",

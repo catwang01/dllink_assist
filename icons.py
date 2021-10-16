@@ -166,7 +166,7 @@ class CoordinateIcon(Icon):
 
         def getImg(self):
                 x, y = self._position
-                return self.background[x[1]:y[1], x[0]:y[0]]
+                return self.background[int(x[1]):int(y[1]), int(x[0]):int(y[0])]
 
         def showImg(self):
                 tool.imshow(self.getImg())

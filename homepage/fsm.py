@@ -18,7 +18,7 @@ from unionForce.status import unionForcePage
 from tool import capitalize
 from transportGateDuel.fsm import TransportGateFSM
 from transportGateDuel.status import transportGateHomePage
-from duel.fsm import AutoDuelFSM, DuelFSM
+from duel.fsm import AutoDuelFSM, DuelFSM, ManualDuelFSM
 from duel.status import selectDuelMode
 from maze.status import inMazeStatus
 from maze.fsm import MazeFSM
@@ -344,8 +344,9 @@ class HomePageFSM(FSM):
         logging.debug("starting runMaze")
         return
 
-    def transportGateDuel(self, roleName='yukijudai', level=10):
-        duelFSM = AutoDuelFSM()
+    def transportGateDuel(self, roleName='yukijudai', level=10, duelFSM=None):
+        if duelFSM is None:
+            duelFSM = AutoDuelFSM()
         self.initRun()
         logging.debug('entering transportGateDuel!')
         while True:
@@ -406,5 +407,6 @@ class HomePageFSM(FSM):
             # for i in range(10):
             #     # tianjoyin
             #     # yukijudai
-            #     self.transportGateDuel(roleName='mutouyougi')
+            #     # mutouyougi
+            #     self.transportGateDuel(roleName='yukijudai', duelFSM=ManualDuelFSM())
             #     tool.sleep(3)

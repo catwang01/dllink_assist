@@ -8,6 +8,8 @@ import numpy as np
 
 from icons import CoordinateIcon
 from log.log import setupLogging
+from tool import Timer
+from card import isValidCard
 import tool
 
 setupLogging()
@@ -109,26 +111,91 @@ class Direction(Enum):
     SELF = 0
     RIVAL = 1
 
+class Area(Enum):
+    MONSTER = 0
+    SPELL = 1
+    GRAVE = 2
+    HAND = 3
+    DECK = 4
+
 class BattleField:
 
+    detector = cv2.xfeatures2d.SIFT_create()
+
     def __init__(self, background=None) -> None:
+        self.background = None
+        self.refresh(background)
+
+    def refresh(self, background=None):
         if background is None:
             background = tool.get_appshot()
         elif isinstance(background, str):
             background = cv2.imread(background)
         self.background =  background
 
+    def getAreaScreenshot(self, area):
+        if area == Area.MONSTER:
+            coordinate = [(108, 368), (340, 446)]
+        elif area == Area.SPELL:
+            coordinate = [(115, 448), (344, 447)]
+        elif area == Area.GRAVE:
+            coordinate = [(352, 353), (409, 433)]
+        elif area == Area.HAND:
+            coordinate = [(0, 590), (444, 718)]
+        elif area == Area.DECK:
+            coordinate = [(364, 471), (422, 555)]
+        icon = CoordinateIcon(coordinate, background=self.background)
+        return icon
+
     def nGetDeckLeftCard(self, direc=Direction.SELF):
         numbers = None
         if direc == Direction.SELF:
-            icon = CoordinateIcon([(370, 496), (405, 530)])
+            coordinate = [(370, 496), (405, 530)]
         elif direc == Direction.RIVAL:
-            icon = CoordinateIcon([(55, 150), (95, 186)])
+            coordinate = [(55, 150), (95, 186)]
         else:
             raise Exception(f"No such item in {Direction}")
-        icon.background = self.background
+        
+        icon = CoordinateIcon(position=coordinate, background=self.background)
         img = icon.getImg()
         numbers = extractNumber(img, getTemplateImages(None), showImg=False)
         if numbers == '':
             return 0
         return int(numbers)
+
+    def checkArea(self, card, area, *args, **kwargs):
+        icon = None
+        points = self.detectArea(card, area, *args, **kwargs)
+        if points is not None:
+            icon = CoordinateIcon([
+                (points[0][0]/2, points[0][1]/2), 
+                (points[2][0]/2, points[2][1]/2)
+            ])
+            logging.debug(f"{card} exists")
+        else:
+            logging.warning(f"{card} doesn't exists")
+        return icon
+
+    def detectArea(self, card, area, threshold=None, *args, **kwargs):
+        img = card.img
+        if area is not None:
+            background = self.getAreaScreenshot(area).getImg()
+            leftTop = self.getAreaScreenshot(area).position[0]
+        else:
+            background = self.background
+            leftTop = (0, 0)
+        with Timer('find_img_by_descriptor', stdout=logging.debug):
+            scene_corners  = tool.find_img_by_descriptor(
+                img, background, detector=self.detector, *args, **kwargs
+            )
+        if scene_corners is None:
+            return None
+        points = scene_corners.squeeze().tolist()
+        if not isValidCard(points, threshold):
+            return None
+        points = [(leftTop[0] + point[0], leftTop[1] + point[1]) for point in points]
+        return points
+
+    def drag(self, icon, endPoint=(200, 300)):
+        curPosition = icon.click(x=-10)
+        tool.Operation().slide(curPosition, endPoint)

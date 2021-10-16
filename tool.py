@@ -192,10 +192,11 @@ def find_img_by_descriptor(img_object,
     if descriptors_obj is not None and descriptors_scene is not None:
         knn_matches = matcher.match(descriptors_obj, descriptors_scene)
     knn_matches.sort(key=lambda x: x.distance)
-    good_matches = knn_matches[:18]
-    # for match in knn_matches:
-    #     if match.distance < 100:
-    #         good_matches.append(match)
+    knn_matches = knn_matches[:50]
+    good_matches = []
+    for match in knn_matches:
+        if match.distance < 120:
+            good_matches.append(match)
 
     if len(good_matches) <= 4:
         logging.debug(f'matches points are not enough {len(good_matches)}')

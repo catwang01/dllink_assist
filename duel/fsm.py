@@ -14,11 +14,12 @@ from login.fsm import LoginFSM
 from homepage.status import homePage
 from transportGateDuel.status import transportGateHomePage
 from card import CardCollection
-from battleField import BattleField, Direction
+from battleField import BattleField, Direction, Area
 from unionForce.status import unionForcePage
 from const import CARD_DICT_FILE
 from connectionError.status import networkConnectionPage
 from activity.ddCastle.status import ddCastleHomePage
+from maze.status import inMazeStatus
 
 
 class Phrase(Enum):
@@ -83,53 +84,45 @@ class EndTurnFSM(FSM):
         self.afterRun()
         return
 
-def getCardArea(cardName, cardCollection):
+def isCardInHandArea(cardName, cardCollection, bf):
     card = cardCollection.getCardByName(cardName)
-    area = None
-    if card.exists(init=True):
-        area = card.area
-    return area
+    return bf.checkArea(card, Area.HAND) is not None
 
-def isCardInHandArea(*args, **kwargs):
-    return getCardArea(*args, **kwargs) == 'hand'
-
-def isCardInMonsterArea(*args, **kwargs):
-    return getCardArea(*args, **kwargs) == 'monster'
+def isCardInMonsterArea(cardName, cardCollection, bf):
+    card = cardCollection.getCardByName(cardName)
+    return bf.checkArea(card, Area.MONSTER) is not None
 
 def refreshScreen():
     FSM().refreshScreen()
 
-def sumonCard(cardName, cardCollection):
+def sumonCard(cardName, cardCollection, bf):
     card = cardCollection.getCardByName(cardName)
-    if card.exists(init=True):
-        SumonFSM().run(card)
+    if bf.checkArea(card, Area.HAND) is not None:
+        SumonFSM().run(card, bf)
     refreshScreen()
+    bf.refresh()
     logging.debug(f"Monster {card} sumoned")
 
-def attackCard(cardName, cardCollection, target=None):
+def attackCard(cardName, cardCollection, bf, target=None):
+    card = cardCollection.getCardByName(cardName)
     if isinstance(target, int):
         target = CardPlaceholder([(126, 244), (171, 168)])
-    elif isinstance(target, str):
-        target = cardCollection.getCardByName(target)
-    card = cardCollection.getCardByName(cardName)
-    if card.exists(init=True):
-        AttackFSM().run(card, target=target)
+    if bf.checkArea(card, Area.MONSTER) is not None:
+        AttackFSM().run(card, bf, target=target)
     refreshScreen()
+    bf.refresh()
 
-def useCard(cardName, cardCollection, target=None):
+def useCard(cardName, cardCollection, bf, target=None):
     if isinstance(target, int):
         target = CardPlaceholder([(27, 420), (120,557)])
     elif isinstance(target, str):
         target = cardCollection.getCardByName(target)
     card = cardCollection.getCardByName(cardName)
-    if card.exists(init=True):
-        UseFSM().run(card, target=target)
+    if bf.checkArea(card, Area.HAND) is not None:
+        UseFSM().run(card, bf, target=target)
     logging.debug(f"Card {card} is used")
     refreshScreen()
-
-def cardExists(cardName, cardCollection):
-    card = cardCollection.getCardByName(cardName)
-    return card.exists(init=True)
+    bf.refresh()
 
 def testBattlePhrase(curStatus):
     logging.debug('testBattlePhrase start')
@@ -141,7 +134,7 @@ def testBattlePhrase(curStatus):
         dogCardName = '魔导兽 刻耳柏洛斯'
         monster2 = '不屈斗士 磊磊'
         monster3 = '守墓的随从'
-        attackCard(monster3, cardCollection, 1)
+        attackCard(monster3, cardCollection, bf, target=1)
     logging.debug('testBattlePhrase end')
 
 def testMainPhrase(status):
@@ -157,29 +150,29 @@ def testMainPhrase(status):
     # sumon monster
     isLastTurn = bf.nGetDeckLeftCard() == 0 or bf.nGetDeckLeftCard(direc=Direction.RIVAL) == 0
     logging.debug(f"LeftCard me: {bf.nGetDeckLeftCard()} rival: {bf.nGetDeckLeftCard(direc=Direction.RIVAL)}")
-    if isCardInHandArea(dogCardName, cardCollection):
-        sumonCard(dogCardName, cardCollection)
+    if isCardInHandArea(dogCardName, cardCollection, bf):
+        sumonCard(dogCardName, cardCollection, bf)
     else:
         if isLastTurn:
-            if isCardInHandArea(monster3, cardCollection):
-                sumonCard(monster3, cardCollection)
+            if isCardInHandArea(monster3, cardCollection, bf):
+                sumonCard(monster3, cardCollection, bf)
         else:
-            if isCardInMonsterArea(dogCardName, cardCollection) and isCardInHandArea(monster2, cardCollection):
-                sumonCard(monster2, cardCollection)
-    if isCardInMonsterArea(dogCardName, cardCollection):
+            if isCardInMonsterArea(dogCardName, cardCollection, bf) and isCardInHandArea(monster2, cardCollection, bf):
+                sumonCard(monster2, cardCollection, bf)
+    if isCardInMonsterArea(dogCardName, cardCollection, bf):
         for cardName in normalSpellCards:
-            while isCardInHandArea(cardName, cardCollection):
-                useCard(cardName, cardCollection)
+            while isCardInHandArea(cardName, cardCollection, bf):
+                useCard(cardName, cardCollection, bf)
     if isLastTurn:
         nextPhrase = Phrase.BattlePhrase
         for cardName in ['H-火热之心', '联合攻击']:
-            while isCardInHandArea(cardName, cardCollection):
+            while isCardInHandArea(cardName, cardCollection, bf):
                 if cardName == 'H-火热之心':
-                    useCard('H-火热之心', cardCollection, target='魔导兽 刻耳柏洛斯')
+                    useCard('H-火热之心', cardCollection, bf, target='魔导兽 刻耳柏洛斯')
                 elif cardName == '联合攻击':
-                    useCard('联合攻击', cardCollection, target='守墓的随从')
+                    useCard('联合攻击', cardCollection, bf, target='守墓的随从')
                 else:
-                    useCard(cardName, cardCollection)
+                    useCard(cardName, cardCollection, bf)
     
     logging.debug('testMainPhrase end')
     return nextPhrase
@@ -194,12 +187,13 @@ class UseFSM(FSM):
     ]
     
 
-    def run(self, card, target=None):
+    def run(self, card, bf, target=None):
         self.beforeRun()
-        assert card.area == 'hand'
         used = False
         while True:
             curStatus = self.getCurrentStatus()
+            icon = bf.checkArea(card, Area.HAND)
+            bf.refresh()
             if curStatus == manualDuelStatus:
                 if used:
                     if manualDuelStatus.hasActionButton():
@@ -212,14 +206,14 @@ class UseFSM(FSM):
                         curStatus.transfer('useCard')
                         used =  True
                     else:
-                        card.drag()
+                        bf.drag(icon)
                         tool.sleep(0.5)
             elif curStatus == selectTargetPage:
                 if curStatus.hasButton('confirmButton'):
                     curStatus.transfer('confirm')
                     break
                 else:
-                    curStatus.transfer('selectTargetByCard', args=(target,))
+                    curStatus.transfer('selectTargetByCard', args=(target, bf))
             else:
                 if self.handleUnexpectedStatus(curStatus):
                     break
@@ -235,12 +229,13 @@ class SumonFSM(FSM):
         manualDuelStatus
     ]
 
-    def run(self, card: Card):
+    def run(self, card: Card, bf: BattleField):
         self.beforeRun()
-        assert card.area == 'hand'
         sumoned = False
         while True:
             curStatus = self.getCurrentStatus()
+            icon = bf.checkArea(card, Area.HAND)
+            bf.refresh()
             if curStatus == manualDuelStatus:
                 if sumoned:
                     if manualDuelStatus.hasActionButton(): # sumon is finised
@@ -253,7 +248,7 @@ class SumonFSM(FSM):
                         curStatus.transfer('sumon')
                         sumoned = True
                     else:
-                        card.drag()
+                        bf.drag(icon)
                         tool.sleep(0.5)
             else:
                 if self.handleUnexpectedStatus(curStatus):
@@ -268,14 +263,15 @@ class AttackFSM(FSM):
         manualDuelStatus,
         duelFinishedPage
     ]
-    def run(self, card, target=None):
+    def run(self, card, bf, target=None):
         self.beforeRun()
         while True:
             curStatus = self.getCurrentStatus()
-            card.init()
+            icon = bf.checkArea(card, Area.MONSTER)
+            bf.refresh()
             if curStatus == manualDuelStatus:
-                if card.exists():
-                    card.drag(tool.get_center_point(target.position))
+                if bf.checkArea(card, Area.MONSTER):
+                    bf.drag(icon, tool.get_center_point(target.position))
                     tool.sleep(0.2)
             elif curStatus == duelFinishedPage:
                 break
@@ -414,7 +410,7 @@ class DuelFSM(FSM):
                 LoginFSM().run()
             elif curStatus == networkConnectionPage:
                 networkConnectionPage.transfer("retry")
-            elif curStatus in {transportGateHomePage, homePage, inDiagLog, unionForcePage, ddCastleHomePage}:
+            elif curStatus in {transportGateHomePage, homePage, inDiagLog, unionForcePage, ddCastleHomePage, inMazeStatus}:
                 break
             else:
                 if self.handleUnexpectedStatus(curStatus):

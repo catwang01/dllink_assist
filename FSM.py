@@ -47,13 +47,13 @@ class FSM(metaclass=FsmMetaClass):
     def getCurrentStatus(self, refresh=True) -> Optional[Status]:
         if refresh:
             self.refreshScreen()
-        logging.info('Getting current status')
+        logging.info(f'{self.name}: Getting current status')
         curStatus = None
         for status in self.statusList:
             if status.check():
                 curStatus = status 
                 break
-        logging.info("Current status: {}".format(curStatus))
+        logging.info(f"{self.name}: Current status: {curStatus}")
         return curStatus
 
     def beforeRun(self):
