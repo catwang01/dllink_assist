@@ -3,7 +3,7 @@ thisDir = os.path.dirname(os.path.abspath(__file__))
 import pytest
 import cv2
 
-from duel.icons import settingButton, duelButton
+from duel.icons import settingButton, duelButton, autoDuelButton
 
 class TestDuel:
 
@@ -24,5 +24,16 @@ class TestDuel:
         img = cv2.imread(imgPath)
         duelButton.background = img
         assert duelButton.exists() == expectedVal
+
+    @pytest.mark.parametrize('imgPath,expectedVal', [
+        (f'{thisDir}/test4.png', True),
+        (f'{thisDir}/test5.png', False)
+    ])
+    def test_autoDuelButton(self, imgPath, expectedVal):
+        img = cv2.imread(imgPath)
+        autoDuelButton.background = img
+        assert autoDuelButton.exists() == expectedVal
+
+    
 
     

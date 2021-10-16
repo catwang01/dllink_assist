@@ -25,7 +25,7 @@ class TransportGateFSM(FSM):
     def getWorldFromRole(self, roleName):
         return {'yukijudai': 'gx', 'tianjoyin': 'gx', 'mutouyougi': 'dm'}.get(roleName, None)
 
-    def run(self, roleName: str, level: str, duelFSM):
+    def run(self, roleName: str, level: str, duelFSM=None):
         self.beforeRun()
         world = self.getWorldFromRole(roleName)
         clicked = False

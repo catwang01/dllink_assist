@@ -63,6 +63,7 @@ class StatusControlThread(threading.Thread, FSM):
             # homePage.check()
             # self.maze()
             # ManualDuelFSM().run()
+            # HomePageFSM().runMaze()
             curStatus = self.getCurrentStatus()
             if curStatus == startPage:
                 curStatus.transfer('startGame')

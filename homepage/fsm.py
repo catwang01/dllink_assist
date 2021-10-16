@@ -18,7 +18,7 @@ from unionForce.status import unionForcePage
 from tool import capitalize
 from transportGateDuel.fsm import TransportGateFSM
 from transportGateDuel.status import transportGateHomePage
-from duel.fsm import DuelFSM
+from duel.fsm import AutoDuelFSM, DuelFSM
 from duel.status import selectDuelMode
 from maze.status import inMazeStatus
 from maze.fsm import MazeFSM
@@ -188,7 +188,7 @@ class DuelWithOneNormalNPC(FSM):
                 curStatus.transfer('next', 5)
                 nDiagLog += 1
             elif curStatus == selectDuelMode:
-                DuelFSM().run()
+                autoDuelable, isWin = DuelFSM().run()
             elif curStatus in generalStatusList:
                 curStatus.transfer("default")
             elif curStatus == loginPage:
@@ -345,6 +345,7 @@ class HomePageFSM(FSM):
         return
 
     def transportGateDuel(self, roleName='yukijudai', level=10):
+        duelFSM = AutoDuelFSM()
         self.initRun()
         logging.debug('entering transportGateDuel!')
         while True:
@@ -356,7 +357,7 @@ class HomePageFSM(FSM):
                 else:
                     curStatus.transfer('selectTransportGate')
             elif curStatus == transportGateHomePage:
-                    TransportGateFSM().run(roleName, 'level{}'.format(level))
+                    TransportGateFSM().run(roleName, 'level{}'.format(level), duelFSM)
                     break
             elif curStatus in generalStatusList:
                 curStatus.transfer("default")
@@ -400,10 +401,10 @@ class HomePageFSM(FSM):
             self.unionForceChallenge()
             tool.sleep(3)
             self.collectHiddenItems()
-            tool.sleep(3)
+            # tool.sleep(3)
             # self.runSai()
-        # for i in range(5):
-        #     # tianjoyin
-        #     # mutouyougi
-        #     self.transportGateDuel(roleName='yukijudai')
-        #     tool.sleep(3)
+            # for i in range(10):
+            #     # tianjoyin
+            #     # yukijudai
+            #     self.transportGateDuel(roleName='mutouyougi')
+            #     tool.sleep(3)

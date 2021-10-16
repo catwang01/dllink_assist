@@ -115,6 +115,22 @@ class MultiIcon(Icon):
         def exists(self) -> bool:
                 return self.count() != 0
 
+        @property
+        def background(self):
+                if self._background is None:
+                        # logging.debug(f"background of Icon is not set. Use appshot.")
+                        return tool.get_appshot()
+                else:
+                        return self._background
+
+        @background.setter
+        def background(self, background):
+                if background is not None:
+                        if isinstance(background, str):
+                                background = cv2.imread(background)
+                        self._background = background.copy()
+
+
 class CoordinateIcon(Icon):
 
         def __init__(self, position=None, name=None, background=None, clickSleepTime=0.5) -> None:

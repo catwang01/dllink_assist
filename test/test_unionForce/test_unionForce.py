@@ -11,7 +11,7 @@ class TestUnionForce:
             ('test/test_unionForce/screenshot1.png', unionForceIcon, True),
             ('test/test_unionForce/screenshot2.png', unionForceIcon, True),
             ('test/test_unionForce/screenshot3.png', unionForceChallengeButton, False),
-            ('test/test_unionForce/screenshot4.png', unionForceTitle, True),
+            ('test/test_unionForce/screenshot4.png', unionForceTitle, False),
             ('test/test_unionForce/screenshot5.png', unionForceChallengeButton, True),
         ]
     )

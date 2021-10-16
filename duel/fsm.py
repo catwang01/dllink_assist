@@ -420,4 +420,4 @@ class DuelFSM(FSM):
                 if self.handleUnexpectedStatus(curStatus):
                     break
         self.afterRun()
-        return self.autoDuelable
+        return self.autoDuelable, self.isWin
